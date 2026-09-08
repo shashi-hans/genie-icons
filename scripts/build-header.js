@@ -66,3 +66,40 @@ console.log(
     (skipped ? ` (${skipped} skipped)` : "") +
     `.`
 );
+
+/* --- icon count ----------------------------------------------------------- */
+// The catalogue's size appears in the markup twice: the homepage stat and the
+// gallery's search placeholder. Both paint before any request answers, so both
+// have to be in the file, and both were hand-typed and had gone stale — the
+// homepage said 8,470 against a catalogue of 9,032.
+//
+// Written from docs/icons.json, which generate-index.js has already produced by
+// the time this runs, so the figure in the file is the figure the build emitted.
+//
+// It can still differ from what /api/icons reports, by the number of icons an
+// admin has hidden. That difference is live and belongs to the running site;
+// the page replaces the figure with the server's as soon as it answers.
+const COUNT_RE = /(<b\b[^>]*\bdata-icon-count\b[^>]*>)[\d,]*(<\/b>)/g;
+const PLACEHOLDER_RE = /(placeholder="Search icon from list of )[^"]*( icons \.\.\.")/;
+
+let total = null;
+try {
+  total = JSON.parse(fs.readFileSync(path.join(DOCS_DIR, "icons.json"), "utf8")).total;
+} catch {
+  console.warn("  icon count: docs/icons.json not readable, skipped");
+}
+
+if (typeof total === "number") {
+  const shown = total.toLocaleString("en-US");
+  for (const file of ["index.html", "gallery.html"]) {
+    const full = path.join(DOCS_DIR, file);
+    if (!fs.existsSync(full)) continue;
+    const before = fs.readFileSync(full, "utf8");
+    const after = before
+      .replace(COUNT_RE, `$1${shown}$2`)
+      .replace(PLACEHOLDER_RE, `$1${total}$2`);
+    if (after === before) continue;
+    fs.writeFileSync(full, after);
+    console.log(`  ${file}: icon count set to ${shown}`);
+  }
+}
