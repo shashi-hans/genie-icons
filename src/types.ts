@@ -1,24 +1,24 @@
 import type * as React from "react";
 
-// The four weights, lightest first with fill/duotone last.
+// The five weights, lightest first with fill/duotone last.
 export type IconWeight =
   | "thin"
   | "regular"
+  | "bold"
   | "fill"
   | "duotone"
   /** @deprecated Removed as a weight; renders `thin`. */
   | "light"
   /** @deprecated Removed as a weight; renders `regular`. */
-  | "bold"
-  /** @deprecated Removed as a weight; renders `regular`. */
   | "sharp";
 
 // The weights the library offers, for runtime use (e.g. building pickers). The
-// deprecated three are absent deliberately: they still render, but nothing new
+// deprecated two are absent deliberately: they still render, but nothing new
 // should pick them from a list.
 export const ICON_WEIGHTS: readonly IconWeight[] = [
   "thin",
   "regular",
+  "bold",
   "fill",
   "duotone",
 ] as const;

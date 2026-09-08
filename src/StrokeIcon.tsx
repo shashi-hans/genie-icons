@@ -3,12 +3,12 @@ import { IconBase } from "./IconBase";
 import type { IconProps } from "./types";
 import { STROKE_WIDTHS } from "./strokeWeights";
 
-// Renders an AI-generated icon defined by 1–4 centerline paths, deriving all four
-// weights at render time:
-//   thin / regular -> the same paths stroked at two widths,
-//   fill           -> the paths filled as solid silhouettes,
-//   duotone        -> a faded fill behind the regular stroke.
-// One drawing, four coherent weights — no per-weight model output to keep in sync.
+// Renders an icon defined by centerline paths, deriving every weight at render
+// time:
+//   thin / regular / bold -> the same paths stroked at three widths,
+//   fill                  -> the paths filled as solid silhouettes,
+//   duotone               -> a faded fill behind the regular stroke.
+// One drawing, five coherent weights — no per-weight artwork to keep in sync.
 // `color` drives the stroke (or fill), matching the rest of the library's API.
 //
 // A separate path per disconnected line is what makes compound icons work: a
@@ -40,9 +40,9 @@ export function StrokeIcon({
     );
   }
 
-  // Removed weights still type-check and still render: light was the step below
-  // regular, bold and sharp the steps above it.
-  const resolved = weight === "light" ? "thin" : weight === "bold" || weight === "sharp" ? "regular" : weight;
+  // Weights the library does not offer still type-check and still render: light
+  // was the step below regular, sharp a second cut of it.
+  const resolved = weight === "light" ? "thin" : weight === "sharp" ? "regular" : weight;
 
   const width =
     resolved === "duotone"
