@@ -11,6 +11,7 @@
 // re-checks the session cookie on every call, so a role shown here is a label,
 // never a permission.
 import { api } from "./api.js";
+import { withBusy } from "./busy.js";
 import { applyTheme, wireToggles } from "./theme.js";
 
 /** The signed-in identity, resolved once per page and shared by every caller. */
@@ -140,7 +141,7 @@ export async function initHeader({ current, history = false, visit = false, home
   logout.hidden = !admin;
   logout.addEventListener("click", async () => {
     try {
-      await api("/api/auth/logout", { method: "POST" });
+      await withBusy(logout, () => api("/api/auth/logout", { method: "POST" }), { label: "Logging out…" });
     } finally {
       // Before the reload, or the badge repaints "Admin" from this cache until
       // /api/auth/me answers — after you have just logged out.
