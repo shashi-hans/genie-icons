@@ -12,7 +12,7 @@
 // demo were not the flows that would run, and every page carried a banner
 // apologising for it. Better to need a database than to pretend to have one.
 //
-// TO ADD ANOTHER DRIVER: implement the same twenty methods against your client
+// TO ADD ANOTHER DRIVER: implement every method of the Store typedef against your client
 // and return it from a factory here. Keep it in ap-south-1 — submissions and
 // guest history are personal data under the DPDP Act, so residency and the
 // retention window are decisions that belong with the schema, not with the
@@ -72,6 +72,8 @@
  * @property {() => Promise<{name: string, hiddenAt: string|null, hiddenBy: string|null}[]>} listHiddenIcons
  * @property {(guestId: string, count: boolean, country?: string) => Promise<{visitors: number, views: number}>} recordVisit
  * @property {() => Promise<{country: string, views: number, visitors: number, lastSeen: string|null}[]>} listVisitorCountries
+ * @property {(name: string, action: "copy"|"download", count?: number) => Promise<void>} recordIconUse  empty name = the resizer
+ * @property {(limit?: number) => Promise<{icons: {name: string, copies: number, downloads: number, lastUsed: string|null}[], totals: {copies: number, downloads: number, resizerExports: number}}>} listIconUses
  */
 
 import { createSupabaseStore } from "./store-supabase.js";

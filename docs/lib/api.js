@@ -20,6 +20,48 @@ export async function api(path, opts = {}) {
   return data;
 }
 
+/**
+ * Count one copy or download, for the usage tally on the admin page.
+ *
+ * Fire-and-forget by design: it must never delay the export or turn a database
+ * hiccup into a failed copy, so nothing is awaited and every error is swallowed.
+ * `sendBeacon` is used where it exists because it survives the page being closed
+ * in the same gesture, which a download can cause.
+ *
+ * `name` is the icon; pass "" where there is no icon of ours, which is the
+ * resizer working on a file the user supplied. Nothing identifying is sent —
+ * the guest cookie rides along as it does on every same-origin request, and the
+ * server does not read it here.
+ *
+ * `count` is for one gesture that exports several files at once — the resizer's
+ * "Download all" — so the tally matches what the individual buttons would have
+ * added without sending a beacon per file.
+ *
+ * @param {string} name
+ * @param {"copy"|"download"} action
+ * @param {number} [count]
+ */
+export function recordUse(name, action, count = 1) {
+  const body = JSON.stringify({ name: name || "", action, count });
+  try {
+    if (navigator.sendBeacon) {
+      // A typed Blob, so the request arrives as JSON rather than as the
+      // text/plain sendBeacon sends for a bare string.
+      navigator.sendBeacon("/api/uses", new Blob([body], { type: "application/json" }));
+      return;
+    }
+    fetch("/api/uses", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "content-type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* counting is not worth an error in front of the user */
+  }
+}
+
 let toastTimer = null;
 
 /** Brief confirmation at the bottom of the page. Creates its own node if needed. */
