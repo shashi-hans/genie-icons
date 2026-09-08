@@ -61,8 +61,10 @@ export default handler(async (req, res) => {
   if (!hit) throw new HttpError(404, "No such icon.");
 
   const weight = asked || hit.weight;
-  // Derived here for this one icon when it is a stroke icon, rather than for all
-  // 4,053 of them when the catalogue loads.
+  // One accessor for both kinds of icon: a drawn one carries its weights, and a
+  // stroke icon that reached here without them is expanded from its centerline
+  // paths. readSeed() normally fills them in already, so this is the fallback
+  // path rather than a saving.
   const inner = innerFor(hit.icon, weight);
   const fill = color || "currentColor";
   // `color` as well as `fill`, because the two kinds of icon take their paint

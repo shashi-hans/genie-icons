@@ -25,7 +25,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SEED = join(ROOT, "docs", "icons.json");
 
 // What the API serves. Mirrors scripts/utils.js.
-export const WEIGHTS = ["thin", "regular", "fill", "duotone"];
+export const WEIGHTS = ["thin", "regular", "bold", "fill", "duotone"];
 
 // The weight files that exist under raw-svgs/. Used for recognising built
 // artwork on disk, which is a different question from what the API serves.
@@ -51,6 +51,37 @@ export function readSeed() {
   } catch {
     return [];
   }
+}
+
+/**
+ * Set code to display name, as the build wrote it: {"tb": "Tabler", ...}.
+ *
+ * An icon carries the code, so the page needs this to show which set drew it.
+ * Small enough to send with every page of results, and it has to be: the gallery
+ * pages through the catalogue and any page can hold icons from any set. Returns
+ * {} before the first build, which reads as "source unknown" rather than
+ * breaking the grid.
+ *
+ * Cached against the catalogue's mtime, the same way isBuiltIcon caches its name
+ * set. /api/icons calls this on every request, including every keystroke of a
+ * search, and the table it wants is a dozen entries at the end of a 7 MB file —
+ * so parsing the file per request spent megabytes of work to read bytes of it.
+ */
+/** @type {Record<string,string>|null} */
+let setNames = null;
+let setNamesAt = -1;
+
+export function readSetNames() {
+  const at = seedMtime();
+  if (setNames && at === setNamesAt) return setNames;
+  try {
+    const data = JSON.parse(readFileSync(SEED, "utf8"));
+    setNames = data.sets && typeof data.sets === "object" ? data.sets : {};
+  } catch {
+    setNames = {};
+  }
+  setNamesAt = at;
+  return setNames;
 }
 
 /**
