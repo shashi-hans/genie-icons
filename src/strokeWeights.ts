@@ -6,7 +6,8 @@
 // and the API), and docs/stroke-weights.js (the two gallery pages). This one
 // cannot import from the others: the package ships it, and a published module
 // must not reach into the repo's build scripts.
-export const STROKE_WIDTHS: Record<"thin" | "regular", number> = {
-  thin: 9,
-  regular: 18,
+export const STROKE_WIDTHS: Record<"thin" | "regular" | "bold", number> = {
+  thin: 8,
+  regular: 16,
+  bold: 24,
 };

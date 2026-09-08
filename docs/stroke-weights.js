@@ -8,7 +8,7 @@
 //   this file                   docs/index.html and docs/admin.html (browser)
 //
 // Emits raw SVG inner markup, which is what both pages render with innerHTML.
-export const STROKE_WIDTHS = { thin: 9, regular: 18 };
+export const STROKE_WIDTHS = { thin: 8, regular: 16, bold: 24 };
 
 function stroked(paths, w) {
   return paths
@@ -25,7 +25,7 @@ function filled(paths, opacity) {
 }
 
 /**
- * Centerline paths -> { thin, regular, fill, duotone } inner markup.
+ * Centerline paths -> { thin, regular, bold, fill, duotone } inner markup.
  * Accepts a bare string for a single-path icon.
  */
 export function deriveWeightInner(paths) {
@@ -33,6 +33,7 @@ export function deriveWeightInner(paths) {
   return {
     thin: stroked(list, STROKE_WIDTHS.thin),
     regular: stroked(list, STROKE_WIDTHS.regular),
+    bold: stroked(list, STROKE_WIDTHS.bold),
     fill: filled(list),
     duotone: filled(list, 0.2) + stroked(list, STROKE_WIDTHS.regular),
   };
