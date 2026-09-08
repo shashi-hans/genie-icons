@@ -472,7 +472,7 @@
         <div class="panel bare reasons-panel">
           <h3 class="block-title">Why Choose Genie Icons ?</h3>
           <div class="panel-stats">
-            <span class="stat"><b id="stat-icons" data-icon-count>9,032</b>icons</span>
+            <span class="stat"><b id="stat-icons" data-icon-count>9,028</b>icons</span>
             <span class="stat"><b>5</b>weights each</span>
             <span class="stat"><b>4</b>upstream sets</span>
             <span class="stat"><b>90</b>brand logos</span>
@@ -528,26 +528,39 @@
       // is navigation, not a reload, and leaves it alone.
       import { clearOnHomeReload } from "./lib/icon-color.js";
       import { initFooter } from "./lib/footer.js";
+      import { readIconTotal, writeIconTotal } from "./lib/local-store.js";
 
       initTheme();
       clearOnHomeReload();
       initHeader({ current: "", home: true, visit: true });
       initFooter();
 
-      // Read from the catalogue rather than typed into the markup, so it cannot
-      // quietly go stale. The rendered values stand if the API is unreachable.
+      // The figure in the markup is written by the build, from the catalogue it
+      // emitted. The server's figure is that minus whatever an admin has hidden,
+      // so the two can differ and the page would visibly swap one for the other.
+      // The last figure the server gave this device is painted first, which is
+      // almost always the one it is about to give again.
+      //
+      // Every element that carries the count is updated, so removing one from
+      // the markup cannot throw into a catch written for a failed fetch.
+      const paintTotal = (value) => {
+        const shown = value.toLocaleString();
+        for (const el of document.querySelectorAll("[data-icon-count]")) {
+          el.textContent = shown;
+        }
+      };
+
+      const remembered = readIconTotal();
+      if (remembered !== null) paintTotal(remembered);
+
       (async () => {
         try {
           const { total } = await api("/api/icons?limit=1");
           if (typeof total !== "number") return;
-          const shown = total.toLocaleString();
-          // Every element that shows the count, so removing one from the markup
-          // cannot throw into the catch below and be read as a failed fetch.
-          for (const el of document.querySelectorAll("[data-icon-count]")) {
-            el.textContent = shown;
-          }
+          if (total !== remembered) paintTotal(total);
+          writeIconTotal(total);
         } catch {
-          /* keep the rendered figures */
+          /* keep whatever is on screen */
         }
       })();
     </script>
