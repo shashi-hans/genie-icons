@@ -11,6 +11,7 @@
 // its own preview. Both hand in an `applyColor` and read back through
 // `activeColor`, so one panel implementation serves both without knowing either.
 import { api } from "./api.js";
+import { withBusy } from "./busy.js";
 // One parser for both. icon-color.js imports nothing, so depending on it here
 // adds no weight; the reverse would drag api.js into the three pages that read
 // a colour but never show the picker.
@@ -26,6 +27,13 @@ import { parseHex } from "./icon-color.js";
  * colour rather than the last click, so a colour picked elsewhere, or a reset,
  * clears the selection instead of leaving a chip claiming to be active.
  */
+// The one button on the site that needs an artificial floor. A published colour
+// comes from a local lookup with no request at all, and a cache hit is nearly as
+// quick; both made the button flicker and left people unsure it had done
+// anything. The wait is on the button, not on the fetch, so a slow site is not
+// made slower.
+const MIN_BUSY_MS = 2000;
+
 export function initSiteTheme({ applyColor, activeColor, onSwatches }) {
   /** Mark whichever fetched swatch is currently in effect, across every panel. */
   function syncSelection() {
@@ -63,13 +71,20 @@ export function initSiteTheme({ applyColor, activeColor, onSwatches }) {
     }
   }
 
-  /** Render the swatches with their label. Both entry points go through this. */
-  function renderSwatches(out, swatches) {
+  /**
+   * Render the swatches with their label. Both entry points go through this.
+   *
+   * `published` means the site was not read: it refuses automated reading, or it
+   * declared nothing usable, and the value is the one the brand publishes. The
+   * label says so, because "Applied colour" on a site that was never fetched
+   * reads as though it had been.
+   */
+  function renderSwatches(out, swatches, published) {
     out.className = "site-theme-out ok";
     out.replaceChildren();
     const label = document.createElement("span");
     label.className = "swatch-label";
-    label.textContent = "Applied colour";
+    label.textContent = published ? "Brand's published colour" : "Applied colour";
     out.appendChild(label);
     const row = document.createElement("span");
     row.className = "swatch-row";
@@ -105,20 +120,27 @@ export function initSiteTheme({ applyColor, activeColor, onSwatches }) {
       out.textContent = "Enter a website address.";
       return;
     }
-    button.disabled = true;
     out.className = "site-theme-out";
     out.textContent = "Reading that site…";
     try {
-      const { swatches } = await api("/api/theme", { method: "POST", body: JSON.stringify({ url }) });
-      renderSwatches(out, swatches);
+      // withBusy answers undefined when the button is already busy, which is what
+      // a second Enter in the address box while the first lookup is in flight
+      // does — the keydown handler does not go through the button. Nothing to
+      // paint then: the request already running owns the panel.
+      const result = await withBusy(
+        button,
+        () => api("/api/theme", { method: "POST", body: JSON.stringify({ url }) }),
+        { minMs: MIN_BUSY_MS, label: "Fetching…" }
+      );
+      if (!result) return;
+      const { swatches, published } = result;
+      renderSwatches(out, swatches, published);
       // Applied after the chips exist so the first one paints as selected.
       apply(swatches[0].hex);
-      onSwatches?.({ site: url, swatches });
+      onSwatches?.({ site: url, swatches, published });
     } catch (err) {
       out.className = "site-theme-out error";
       out.textContent = err.message;
-    } finally {
-      button.disabled = false;
     }
   }
 
@@ -167,11 +189,11 @@ export function initSiteTheme({ applyColor, activeColor, onSwatches }) {
    * done that, and re-applying here would fight it. syncSelection then marks
    * whichever chip matches what is actually in effect.
    */
-  function restore({ site, swatches }) {
+  function restore({ site, swatches, published }) {
     if (!swatches?.length) return;
     for (const panel of document.querySelectorAll("[data-site-theme]")) {
       if (site) panel.querySelector("[data-site-url]").value = site;
-      renderSwatches(panel.querySelector("[data-site-out]"), swatches);
+      renderSwatches(panel.querySelector("[data-site-out]"), swatches, published);
     }
     syncSelection();
   }

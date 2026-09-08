@@ -16,6 +16,7 @@
 import { handler, json, methodIs, readJson, HttpError, clientIp } from "../lib/http.js";
 import { fetchPage, robotsAllows } from "../lib/fetch-page.js";
 import { extractPalette } from "../lib/palette.js";
+import { brandColour } from "../lib/brand-colours.js";
 
 const MAX_URL_CHARS = 2000;
 
@@ -47,6 +48,23 @@ function throttled(ip) {
 const cache = new Map();
 const CACHE_MS = 10 * 60 * 1000;
 const CACHE_MAX = 200;
+
+/**
+ * The brand's own published colour for this URL, in the response shape, or null.
+ *
+ * `published: true` rides along so the page can label the swatch honestly. A
+ * caller that ignores the flag still gets a working `swatches` array, which is
+ * why the flag is additive rather than a different shape.
+ */
+function published(target) {
+  const brand = brandColour(target);
+  if (!brand) return null;
+  return {
+    site: new URL(target).host,
+    swatches: [{ hex: brand.hex, source: `${brand.name} brand guidelines` }],
+    published: true,
+  };
+}
 
 function cached(key) {
   const hit = cache.get(key);
@@ -105,17 +123,51 @@ export default handler(async (req, res) => {
   const hit = cached(target);
   if (hit) return json(res, 200, hit);
 
+  // A site that refuses automated reading is not read. Where the brand publishes
+  // its colour itself, that value answers instead: a second source, not a way
+  // around the refusal. `published` marks it so the page can say where it came
+  // from rather than implying the site was read.
   if (!(await robotsAllows(target, "/"))) {
-    throw new HttpError(403, "That site asks not to be read automatically.");
+    const brand = published(target);
+    if (brand) {
+      remember(target, brand);
+      return json(res, 200, brand);
+    }
+    throw new HttpError(
+      403,
+      "That site asks not to be read automatically, and no published colour is on file for it. Paste a colour below."
+    );
   }
 
-  const { html, url } = await fetchPage(target);
+  // A site can also refuse at fetch time rather than in robots.txt: a bot
+  // manager answering 403, 401 or 429. Same outcome for the caller, so it takes
+  // the same second source. Only that refusal is caught — a 404, a redirect
+  // loop or a non-HTML address are all things the caller can act on, and
+  // answering them with a brand colour would hide a typo'd URL.
+  let html, url;
+  try {
+    ({ html, url } = await fetchPage(target));
+  } catch (err) {
+    if (err?.status !== 502 || !/blocks automated readers/.test(err.message ?? "")) throw err;
+    const brand = published(target);
+    if (!brand) throw err;
+    remember(target, brand);
+    return json(res, 200, brand);
+  }
   // Two, not the extractor's default five. A site has one colour it is actually
   // painted in and at most one worth offering beside it; the rest are borders and
   // greys that scored their way in. Capped here rather than trimmed in the page
   // so the response carries what is shown and nothing more.
   const swatches = extractPalette(html, 2);
   if (swatches.length === 0) {
+    // The page was read and declared nothing usable, which is the other case the
+    // published value covers: colours kept in a stylesheet this deliberately
+    // does not follow.
+    const brand = published(target);
+    if (brand) {
+      remember(target, brand);
+      return json(res, 200, brand);
+    }
     // Not an error: a page can legitimately keep every colour in a stylesheet
     // this deliberately does not follow. Say so plainly instead of failing.
     throw new HttpError(
