@@ -1,6 +1,6 @@
 # icon-genie
 
-A tree-shakeable React icon library. Each icon is one component with a `weight` prop — `thin`, `regular`, `fill`, or `duotone`. TypeScript-first, `currentColor` by default, ESM + CJS, `react` as the only peer.
+A tree-shakeable React icon library. Each icon is one component with a `weight` prop — `thin`, `regular`, `bold`, `fill`, or `duotone`. TypeScript-first, `currentColor` by default, ESM + CJS, `react` as the only peer.
 
 ## Install
 
@@ -25,10 +25,12 @@ All icons forward any valid `<svg>` attribute, plus:
 | --- | --- | --- | --- |
 | `size` | `number \| string` | `24` | width & height (number = px) |
 | `color` | `string` | `"currentColor"` | drives `fill` |
-| `weight` | `thin \| regular \| fill \| duotone` | `"regular"` | which weight to render |
+| `weight` | `thin \| regular \| bold \| fill \| duotone` | `"regular"` | which weight to render |
 | `aria-label` | `string` | — | sets `role="img"`; omit to keep decorative |
 
-**Removed weights still work.** `light`, `bold` and `sharp` are no longer weights the library offers and are absent from `ICON_WEIGHTS`, but they still type-check and still render — `light` as `thin`, `bold` and `sharp` as `regular` — so existing calls do not break. The six `-{thin,light,regular,bold,fill,duotone}.svg` files on disk are untouched: `scripts/utils.js` separates what exists as artwork (`SOURCE_WEIGHTS`) from what the library offers (`WEIGHTS`).
+**Removed weights still work.** `light` and `sharp` are not weights the library offers and are absent from `ICON_WEIGHTS`, but they still type-check and still render — `light` as `thin`, `sharp` as `regular` — so existing calls do not break. The six `-{thin,light,regular,bold,fill,duotone}.svg` files on disk are untouched: `scripts/utils.js` separates what exists as artwork (`SOURCE_WEIGHTS`) from what the library offers (`WEIGHTS`).
+
+Stroke widths are Phosphor's, on its 256-unit grid: `thin` 8, `regular` 16, `bold` 24, which is 0.75, 1.5 and 2.25 at 24px. A derived Tabler or Lucide icon and a drawn Phosphor one therefore sit at the same apparent weight side by side. Tabler ships a filled cut for about a fifth of its icons and Lucide none, so `fill` and `duotone` on those render the outline rather than drawn artwork.
 
 ## Using an icon without React
 
@@ -45,7 +47,7 @@ registerIcons({ Heart, Star });
 <Icon name="heart" weight="fill" />   // "heart", "Heart" and "heart" all match
 ```
 
-The registry is not pre-filled with all 8,468 components on purpose. A built-in
+The registry is not pre-filled with all 9,032 components on purpose. A built-in
 table would be a static reference to every icon in the package, so a bundler
 could drop none of them and importing one icon would ship all of them. An
 unregistered name renders `fallback`, or nothing — a bad row in a CMS should not
@@ -73,9 +75,8 @@ nothing bundled can help there, because the bundler cannot know what to keep.
 in a weight word wins over that reading. It is CORS-open and cached for a year,
 so it works in `<img>`, `<object>`, and CSS.
 
-The SVGs are served, not shipped. One file per icon per weight is 33,872 files
-and 25 MB, which has no place in a package tarball; fetching one costs a few
-hundred bytes.
+The SVGs are served, not shipped. One file per icon per weight is 45,160 files,
+which has no place in a package tarball; fetching one costs a few hundred bytes.
 
 ## Finding an icon
 
@@ -83,9 +84,21 @@ hundred bytes.
 - **Editor autocomplete** on `import { } from "icon-genie"`
 - **At runtime:** `generateMetadata().iconNames`
 
+### Names
+
+Four sets draw a `cloud`, so one holds the bare name and the rest carry a
+two-letter set code: `cloud`, `cloud-tb`, `cloud-lu`, `cloud-ion`. The codes are
+`ph` Phosphor, `tb` Tabler, `lu` Lucide, `ion` Ionicons, `logo` the Ionicons
+brand logos, and `cs` drawn for this project. Phosphor holds the bare name where
+sets collide, then Tabler, then Lucide, then Ionicons.
+
+A digit in a name belongs to the set, not to this package: `book-2-tb` is
+Tabler's own `book-2`. Every icon records which set drew it, under what licence,
+in the `source.json` beside its artwork.
+
 ## Generating an icon that does not exist yet
 
-The gallery has a **✨ Generate** button ([`sh-icon-genie`](https://www.npmjs.com/package/sh-icon-genie)). Describe an icon, get 1–4 centerline paths back, preview all four weights, then download it or open a pull request adding it to this library. Three sources:
+The gallery has a **✨ Generate** button ([`sh-icon-genie`](https://www.npmjs.com/package/sh-icon-genie)). Describe an icon, get 1–4 centerline paths back, preview every weight, then download it or open a pull request adding it to this library. Three sources:
 
 | Source | What it uses | Steps | Cost |
 | --- | --- | --- | --- |
@@ -136,6 +149,8 @@ api/index.js       the only file under api/ — Vercel finds functions there, so
 | `/api/icons` | GET | anyone | one page of icons at every weight; `q`, `offset`, `limit` |
 | `/api/icons/all` | GET | anyone | the same, kept for callers already on that path |
 | `/api/svg/:name.svg` | GET | anyone | one icon as a standalone SVG; `weight`, `size`, `color` |
+| `/api/uses` | POST | anyone | counts one copy or download of an icon |
+| `/api/uses` | GET | admin | the usage tally, busiest icons first |
 
 **Visitors are guests by default.** No account is needed to browse, generate, or contribute — the header shows `Guest`, and a signed `sh_guest` cookie keys their history. That cookie is an identifier, not a credential: it grants nothing but read access to the history filed under it, so forging one gains an attacker nothing.
 
@@ -158,9 +173,21 @@ Both numbers are counter rows in `site_counters`. `visit_guests` still decides w
 
 With the memory store the counters reset whenever the instance recycles. A KV driver would use `INCR` for views and a set for visitors.
 
+### Icon usage
+
+The admin page's **Icon usage** view shows how often each icon is copied or downloaded. The gallery counts its five export buttons, the generator counts every export it releases through the contribution gate, and the resizer contributes a bare total because it works on a file the user supplied — the filename is their data and is never sent.
+
+**Every action counts.** One person taking an icon as SVG and then as PNG counts twice. These are export counts, not people, and not installs: the npm package is used without ever reaching this site.
+
+Two aggregate numbers per icon name and nothing else — no guest id, no time of an individual export, no country. That keeps `icon_uses` outside DPDP personal data, so it needs no retention window and no place in `prune_personal_data`, the same line [0004](supabase/migrations/0004_visit_countries.sql) draws for the country tally.
+
+The counting endpoint is open, because copying an icon needs no account, so anyone willing to post in a loop can inflate a number. An unknown name can only ever create one row, and [0005](supabase/migrations/0005_icon_uses.sql) caps the table at 5000 names, after which new names raise the site totals but do not fill the table. Read the numbers as a popularity signal, not as a metered figure.
+
+The page fires this through `sendBeacon`, after the export and never awaited: a count is not worth making a copy slower, or turning a database hiccup into a failed download.
+
 ### Reviewing submissions
 
-[docs/admin.html](docs/admin.html) lists each submission with all four weights rendered, the icon name and derived component name, what the user asked for, the model's summary, path count, source, timestamp, submitter id, and the target file path. **Approve** / **Reject** records the decision, and the guest sees the outcome in their own History.
+[docs/admin.html](docs/admin.html) lists each submission with every weight rendered, the icon name and derived component name, what the user asked for, the model's summary, path count, source, timestamp, submitter id, and the target file path. **Approve** / **Reject** records the decision, and the guest sees the outcome in their own History.
 
 **Contributors are credited.** A name field sits directly above the Contribute button, capped at 20 characters, and the icon's detail panel shows a `Contributor :` line. Submitting with it empty asks once, inline, whether to contribute without a name — a blank field is far more often "not filled in yet" than "credit me as Anonymous", and the credit is public and permanent once approved. Choosing *Contribute as Anonymous* proceeds; *Add my name* returns focus to the field. The name is remembered in `localStorage` so a repeat contributor types it once.
 
@@ -216,7 +243,7 @@ The relay rebuilds the outgoing request from `messages` alone, pinning the model
 
 An in-memory driver used to stand in when those variables were absent, so a fresh checkout ran with no configuration. It was removed: on serverless it was per-instance and lost on recycle, which made the flows it let you demo not the flows that would run, and both pages carried a banner apologising for it. Needing a database beats pretending to have one. The cost is worth stating plainly: **a clone of this repo can no longer exercise contribution, review, or history without Supabase credentials.**
 
-A second driver is nineteen methods against your own client, returned from the factory in `store.js`; nothing else changes. Two of them have contracts worth reading before you implement them: `countSubmissions` returns exact totals per status and must not be derived from a page of `listSubmissions`, and `removeIcon` returns whether the name is no longer served, not whether this call is what removed it.
+A second driver is every method of the `Store` typedef against your own client, returned from the factory in `store.js`; nothing else changes. Two of them have contracts worth reading before you implement them: `countSubmissions` returns exact totals per status and must not be derived from a page of `listSubmissions`, and `removeIcon` returns whether the name is no longer served, not whether this call is what removed it.
 
 Submissions, guest history, and the visitor table are personal data under the DPDP Act 2023 — all three key on the guest id — so the database belongs in ap-south-1. **The retention window is still undecided**, and until it is, guest ids are kept indefinitely. [0002](supabase/migrations/0002_visit_counter_and_retention.sql) adds `prune_personal_data(days)`, which clears all three tables and keeps pending submissions (an unreviewed one is still doing its job). Pick a window, then schedule it:
 
@@ -227,7 +254,7 @@ select cron.schedule('prune-personal-data', '0 3 * * *', $$select prune_personal
 #### Setting up Supabase
 
 1. Create the project in **South Asia (Mumbai) / ap-south-1**. Residency is the constraint, not latency.
-2. Run the migrations in order in the SQL editor (or `supabase db push`). [0001](supabase/migrations/0001_init.sql) creates `submissions`, `history`, `visit_guests`, `site_counters`, the `record_visit` function, and the 50-per-guest history trim, then turns RLS on and revokes the anon role's access. [0002](supabase/migrations/0002_visit_counter_and_retention.sql) moves the visitor number to a counter row and adds `prune_personal_data(days)`; it backfills from whatever `visit_guests` already holds, so an existing deployment keeps its number.
+2. Run the migrations in order in the SQL editor (or `supabase db push`). [0001](supabase/migrations/0001_init.sql) creates `submissions`, `history`, `visit_guests`, `site_counters`, the `record_visit` function, and the 50-per-guest history trim, then turns RLS on and revokes the anon role's access. [0002](supabase/migrations/0002_visit_counter_and_retention.sql) moves the visitor number to a counter row and adds `prune_personal_data(days)`; it backfills from whatever `visit_guests` already holds, so an existing deployment keeps its number. [0003](supabase/migrations/0003_hidden_icons.sql) adds `hidden_icons`, [0004](supabase/migrations/0004_visit_countries.sql) the per-country tally, and [0005](supabase/migrations/0005_icon_uses.sql) the per-icon usage tally. Each one is additive: until it is applied the feature it carries is off and the rest of the site works.
 3. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` — locally in `.env.local`, on Vercel as Environment Variables. No `STORE_DRIVER` needed.
 
 The driver uses the **service_role** key, which bypasses RLS. That is deliberate: the browser never talks to PostgREST, so authorization stays in this API, where it already lives — the queue behind an admin session and history scoped to the caller's own guest cookie. The key is a database password in effect; it must never reach a page or a log. RLS with no policies plus the revoked grants means a leaked anon key (a public value by design) reads nothing.
@@ -268,7 +295,7 @@ raw-svgs/my-icon/my-icon-{thin,light,regular,bold,fill,duotone}.svg   # the six 
 raw-svgs/my-icon/my-icon.centerline.svg
 ```
 
-All four weights are derived from those paths at render time by [`StrokeIcon`](src/StrokeIcon.tsx): two stroke widths, a fill, and a duotone. Put each disconnected line in its own path (a clock is a ring path plus a hands path). The coordinates must sit on the 256 grid with no wrapping `transform` — a residual scale would make one icon's `bold` thicker than another's, so the build rejects it.
+All five weights are derived from those paths at render time by [`StrokeIcon`](src/StrokeIcon.tsx): three stroke widths, a fill, and a duotone. Put each disconnected line in its own path (a clock is a ring path plus a hands path). The coordinates must sit on the 256 grid with no wrapping `transform` — a residual scale would make one icon's `bold` thicker than another's, so the build rejects it.
 
 Then `npm run build:all` (= `build:icons` → `build`). `my-icon` becomes the `MyIcon` component, exported automatically. Preview with `npm run dev` — a static file server is not enough, because the gallery reads its icons from `/api/icons`.
 
@@ -283,9 +310,9 @@ Then `npm run build:all` (= `build:icons` → `build`). `my-icon` becomes the `M
 
 ## Design notes
 
-One component embeds all four weights and `switch`es at render (so a render allocates one element, not six); the `<svg>` wrapper lives once in `IconBase`; duotone reuses the regular path when identical. `sideEffects: false` + pure annotations keep it tree-shakeable — importing one icon ships one icon.
+One component embeds every weight and `switch`es at render (so a render allocates one element, not six); the `<svg>` wrapper lives once in `IconBase`; duotone reuses the regular path when identical. `sideEffects: false` + pure annotations keep it tree-shakeable — importing one icon ships one icon.
 
-Generated icons take a different route: they store one drawing and derive the four weights from it, so a component holds a path array instead of six path sets. That keeps the weights coherent (they come from the same geometry) and the component small.
+Generated icons take a different route: they store one drawing and derive every weight from it, so a component holds a path array instead of six path sets. That keeps the weights coherent (they come from the same geometry) and the component small.
 
 ## Publishing
 
@@ -303,4 +330,4 @@ That import is where a name can collide: Phosphor keeps growing, and it may ship
 
 ## License
 
-MIT © Shashi Hans. Icon artwork is derived from Phosphor, Lucide, Feather, Tabler, Heroicons, Iconoir, Material Symbols and Ionicons — MIT except Lucide (ISC) and Material Symbols (Apache 2.0). Per-set copyright notices are in [`LICENSE`](LICENSE) and the full texts in [`LICENSES/`](LICENSES); both ship in the npm tarball. The `logo-*` icons are brand logos: the artwork is MIT, the trademarks are not, so use them in a way that does not imply endorsement.
+MIT © Shashi Hans. Icon artwork is derived from Tabler, Phosphor, Lucide and Ionicons — MIT except Lucide, which is ISC. Per-set copyright notices are in [`LICENSE`](LICENSE) and the full texts in [`LICENSES/`](LICENSES); both ship in the npm tarball. The 90 `logo-*` icons are Ionicons brand logos too: the drawings are MIT under Ionicons' terms, the marks they depict are not, so use them in a way that does not imply endorsement. Every icon records its set and licence in the `source.json` beside its artwork.

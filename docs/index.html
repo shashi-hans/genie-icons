@@ -128,11 +128,45 @@
          the bento's row-gap, which also paces the rows below — the same approach
          .reasons-panel takes for its own gap. Scaled in vh like the rest of the
          page, so a short viewport gives the space back. */
+      /* The four tool cards are the point of the page, so they are lifted off it
+         rather than sitting flush like the other panels. Two layers: a tight one
+         for the edge and a soft wide one for the lift.
+
+         Tinted with --accent, which is what .tool h3 is painted in, so the
+         shadow and the card's title stay in step: change the accent token and
+         the shadow follows. --tool-shade is that colour at one alpha, mixed once
+         here rather than repeated across four shadow layers.
+
+         The rgba line before each mix is the fallback for a browser without
+         color-mix. They are the same two accents written out, #15803d light and
+         #4ade80 dark, so an old browser gets the intended colour rather than
+         no shadow. */
       .tool {
         grid-column: span 3;
         margin-top: clamp(14px, 2.8vh, 40px);
         display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
         text-decoration: none; color: inherit;
+        box-shadow: var(--tool-shadow);
+        transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.15s;
+      }
+      :root {
+        --tool-shade: rgba(21, 128, 61, 0.22);
+        --tool-shade: color-mix(in srgb, var(--accent) 22%, transparent);
+        --tool-shade-strong: rgba(21, 128, 61, 0.36);
+        --tool-shade-strong: color-mix(in srgb, var(--accent) 36%, transparent);
+      }
+      /* A dark ground swallows a shadow, so the accent is carried further: a
+         visible rim plus a wider spread, which reads as a green glow rather than
+         as a drop shadow. */
+      :root[data-theme="dark"] {
+        --tool-shade: rgba(74, 222, 128, 0.16);
+        --tool-shade: color-mix(in srgb, var(--accent) 16%, transparent);
+        --tool-shade-strong: rgba(74, 222, 128, 0.32);
+        --tool-shade-strong: color-mix(in srgb, var(--accent) 32%, transparent);
+      }
+      :root {
+        --tool-shadow: 0 1px 2px var(--tool-shade), 0 6px 18px -6px var(--tool-shade);
+        --tool-shadow-hover: 0 2px 4px var(--tool-shade-strong), 0 14px 30px -10px var(--tool-shade-strong);
       }
       /* The icon labels the title, so the two read as one line rather than as a
          badge with a heading under it. */
@@ -168,7 +202,17 @@
         color: var(--muted);
       }
       .tool:hover .tool-arrow { color: var(--accent); }
-      .tool:hover { border-color: var(--accent); }
+      .tool:hover, .tool:focus-visible {
+        border-color: var(--accent);
+        box-shadow: var(--tool-shadow-hover);
+        transform: translateY(-2px);
+      }
+      /* The lift is decoration; the shadow and the accent border still mark the
+         card without it. */
+      @media (prefers-reduced-motion: reduce) {
+        .tool { transition: none; }
+        .tool:hover, .tool:focus-visible { transform: none; }
+      }
       .tile {
         width: clamp(28px, 3.8vh, 38px); height: clamp(28px, 3.8vh, 38px);
         border-radius: 10px;
@@ -410,7 +454,7 @@
 
         <a class="panel tool" href="./gallery.html">
           <span class="tool-head"><span class="tile"><svg class="tile-svg" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="m229.66 218.34-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32M40 112a72 72 0 1 1 72 72 72.08 72.08 0 0 1-72-72"/></svg></span><h3>Icon Gallery</h3><svg class="tool-arrow" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200 64v104a8 8 0 0 1-16 0V83.31L69.66 197.66a8 8 0 0 1-11.32-11.32L172.69 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8"/></svg></span>
-          <p>Search every icon, switch between thin, regular, fill and duotone, set a size and colour, then copy the import line.</p>
+          <p>Search every icon, switch between thin, regular, bold, fill and duotone, set a size and colour, then copy the import line.</p>
         </a>
         <a class="panel tool" href="./generator.html">
           <span class="tool-head"><span class="tile"><svg class="tile-svg" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M48 64a8 8 0 0 1 8-8h16V40a8 8 0 0 1 16 0v16h16a8 8 0 0 1 0 16H88v16a8 8 0 0 1-16 0V72H56a8 8 0 0 1-8-8m136 128h-8v-8a8 8 0 0 0-16 0v8h-8a8 8 0 0 0 0 16h8v8a8 8 0 0 0 16 0v-8h8a8 8 0 0 0 0-16m56-48h-16v-16a8 8 0 0 0-16 0v16h-16a8 8 0 0 0 0 16h16v16a8 8 0 0 0 16 0v-16h16a8 8 0 0 0 0-16m-20.69-64L80 219.31a16 16 0 0 1-22.62 0l-20.7-20.68a16 16 0 0 1 0-22.63L176 36.69a16 16 0 0 1 22.63 0l20.68 20.68a16 16 0 0 1 0 22.63m-54.63 32L144 91.31l-96 96L68.68 208ZM208 68.69 187.31 48l-32 32L176 100.69Z"/></svg></span><h3>Icon Generator</h3><svg class="tool-arrow" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200 64v104a8 8 0 0 1-16 0V83.31L69.66 197.66a8 8 0 0 1-11.32-11.32L172.69 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8"/></svg></span>
@@ -428,11 +472,11 @@
         <div class="panel bare reasons-panel">
           <h3 class="block-title">Why Choose Genie Icons ?</h3>
           <div class="panel-stats">
-            <span class="stat"><b id="stat-icons">8,470</b>icons</span>
-            <span class="stat"><b>4</b>weights each</span>
-            <span class="stat"><b>8</b>upstream sets</span>
+            <span class="stat"><b id="stat-icons" data-icon-count>9,032</b>icons</span>
+            <span class="stat"><b>5</b>weights each</span>
+            <span class="stat"><b>4</b>upstream sets</span>
             <span class="stat"><b>90</b>brand logos</span>
-            <span class="stat"><b>MIT</b>licensed</span>
+            <span class="stat"><b>MIT/ISC</b>licensed</span>
           </div>
           <div class="reasons">
             <div class="reason">
@@ -453,7 +497,7 @@
             </div>
             <div class="reason">
               <span class="badge"><svg class="" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208 40H48a16 16 0 0 0-16 16v56c0 52.72 25.52 84.67 46.93 102.19 23.06 18.86 46 25.26 47 25.53a8 8 0 0 0 4.2 0c1-.27 23.91-6.67 47-25.53C198.48 196.67 224 164.72 224 112V56a16 16 0 0 0-16-16m0 72c0 37.07-13.66 67.16-40.6 89.42a129.3 129.3 0 0 1-39.4 22.2 128.3 128.3 0 0 1-38.92-21.81C61.82 179.51 48 149.3 48 112V56h160ZM82.34 141.66a8 8 0 0 1 11.32-11.32L112 148.69l50.34-50.35a8 8 0 0 1 11.32 11.32l-56 56a8 8 0 0 1-11.32 0Z"/></svg></span>
-              <div><b>Licences included</b><span>All eight upstream texts ship in the package.</span></div>
+              <div><b>Licences included</b><span>All four upstream texts ship in the package.</span></div>
             </div>
           </div>
         </div>
@@ -497,8 +541,11 @@
           const { total } = await api("/api/icons?limit=1");
           if (typeof total !== "number") return;
           const shown = total.toLocaleString();
-          document.getElementById("stat-icons").textContent = shown;
-          document.getElementById("stat-badge").textContent = shown;
+          // Every element that shows the count, so removing one from the markup
+          // cannot throw into the catch below and be read as a failed fetch.
+          for (const el of document.querySelectorAll("[data-icon-count]")) {
+            el.textContent = shown;
+          }
         } catch {
           /* keep the rendered figures */
         }

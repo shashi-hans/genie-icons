@@ -13,6 +13,16 @@ import { loadMe } from "./header.js";
 const CREATOR = "Shashi";
 const CREATOR_URL = "https://github.com/shashi-hans";
 
+// The name the header brand uses, so the two agree. The package is `icon-genie`;
+// the site is Genie Icons.
+const APP_NAME = "Genie Icons";
+
+// The upstream sets the artwork comes from, credited on every page. Names only:
+// the copyright notices and full licence texts are in LICENSE and LICENSES/,
+// which ship in the tarball, and a footer is not the place to restate them.
+// MIT/ISC rather than MIT because Lucide is ISC and the rest are MIT.
+const SOURCES = ["Tabler", "Phosphor", "Lucide", "Ionicons"];
+
 /** Fill every [data-site-footer-bar] on the page. */
 export async function initFooter() {
   const bars = document.querySelectorAll("[data-site-footer-bar]");
@@ -24,9 +34,10 @@ export async function initFooter() {
 
   for (const bar of bars) {
     bar.innerHTML = `
-      <span>© ${year} Icon Genie Gallery. MIT licensed.</span>
+      <span>© ${year} ${APP_NAME}. MIT/ISC licensed.</span>
       <span class="foot-dot" aria-hidden="true">·</span>
       <span>Created by <a href="${CREATOR_URL}" rel="author">${CREATOR}</a></span>
+      <span class="foot-sources"><span class="foot-dot" aria-hidden="true">·</span> Upstream Sets: ${SOURCES.join(", ")}</span>
       <span class="spacer"></span>
       <span class="foot-visitors" hidden></span>
       <a href="https://github.com/shashi-hans/icon-genie">GitHub</a>`;
