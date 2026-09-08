@@ -1,0 +1,7 @@
+{
+  "source": "ph",
+  "set": "Phosphor",
+  "base": "road-horizon",
+  "licence": "MIT",
+  "origin": "name matches the upstream Phosphor set"
+}

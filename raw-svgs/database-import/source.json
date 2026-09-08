@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "database-import",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/database-import.svg"
+}

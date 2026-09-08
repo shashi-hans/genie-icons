@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "file-invoice",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/file-invoice.svg"
+}

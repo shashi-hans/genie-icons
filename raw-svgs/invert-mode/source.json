@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "invert-mode",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/invert-mode-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "cs",
+  "set": "Coverstack",
+  "base": "bacteria",
+  "licence": "MIT",
+  "origin": "recovered from the rename in commit 33f6aee15"
+}

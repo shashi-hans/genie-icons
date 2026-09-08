@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "notifications-off",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/notifications-off-outline.svg"
+}

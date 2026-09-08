@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "calendar-number",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/calendar-number-outline.svg"
+}

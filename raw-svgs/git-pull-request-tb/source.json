@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "git-pull-request",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/git-pull-request.svg"
+}

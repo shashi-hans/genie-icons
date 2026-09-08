@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "brand-vue",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/brand-vue.svg"
+}

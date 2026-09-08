@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "notifications-circle",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/notifications-circle-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "auth-2fa",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/auth-2fa.svg"
+}

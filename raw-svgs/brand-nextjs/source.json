@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "brand-nextjs",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/brand-nextjs.svg"
+}

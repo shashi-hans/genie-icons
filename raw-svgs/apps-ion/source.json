@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "apps",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/apps-outline.svg"
+}

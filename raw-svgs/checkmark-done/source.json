@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "checkmark-done",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/checkmark-done-outline.svg"
+}

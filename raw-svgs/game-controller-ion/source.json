@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "game-controller",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/game-controller-outline.svg"
+}

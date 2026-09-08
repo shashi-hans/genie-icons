@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "videocam",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/videocam-outline.svg"
+}

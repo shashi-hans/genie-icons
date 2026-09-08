@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "color-fill",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/color-fill-outline.svg"
+}

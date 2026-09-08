@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "ticket",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/ticket-outline.svg"
+}

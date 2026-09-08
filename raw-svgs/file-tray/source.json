@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "file-tray",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/file-tray-outline.svg"
+}
