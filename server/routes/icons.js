@@ -16,7 +16,7 @@
 // no submission detail beyond the credit a contributor asked to have shown.
 import { handler, json, methodIs } from "../lib/http.js";
 import { getStore } from "../lib/store.js";
-import { WEIGHTS } from "../lib/icons.js";
+import { WEIGHTS, readSetNames } from "../lib/icons.js";
 
 const DEFAULT_LIMIT = 120;
 // A page of this many icons with every weight is roughly 1.2 MB, which leaves
@@ -75,6 +75,9 @@ async function page(req, res) {
   return json(res, 200, {
     icons: matched.slice(offset, offset + limit),
     weights: WEIGHTS,
+    // An icon carries its set as a two-letter code; this turns it into the name
+    // the detail panel shows.
+    sets: readSetNames(),
     total: matched.length,
     catalogueTotal: all.length,
     offset,

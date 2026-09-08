@@ -23,13 +23,19 @@ const MAX_CONTRIBUTOR_CHARS = 20;
 const COORD_MIN = -64;
 const COORD_MAX = 320;
 
-/** kebab-case a display name, or "" when nothing usable survives. */
+/**
+ * kebab-case a display name, or "" when nothing usable survives.
+ *
+ * Truncated before the dashes are trimmed, not after: cutting at 60 characters
+ * can land on a dash, and a name ending in one becomes a directory, an export
+ * and a URL segment with a trailing dash on it.
+ */
 export function kebabName(value) {
   return String(value ?? "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, MAX_NAME_CHARS);
+    .slice(0, MAX_NAME_CHARS)
+    .replace(/^-+|-+$/g, "");
 }
 
 function validatePath(d) {
