@@ -11,6 +11,7 @@
 // re-checks the session cookie on every call, so a role shown here is a label,
 // never a permission.
 import { api } from "./api.js";
+import { withBusy } from "./busy.js";
 import { applyTheme, wireToggles } from "./theme.js";
 
 /** The signed-in identity, resolved once per page and shared by every caller. */
@@ -94,9 +95,14 @@ export async function initHeader({ current, history = false, visit = false, home
   // Trailing space: the name is a separate <strong>, and without it the two run
   // together as "WelcomeGuest".
   const setWelcome = (name) => {
+    // "Welcome" is an element, not a text node, so app.css can drop it on a
+    // narrow bar and keep the name — which is the part that carries meaning.
+    const greet = document.createElement("span");
+    greet.className = "who-greet";
+    greet.textContent = "Welcome ";
     const strong = document.createElement("strong");
     strong.textContent = name;
-    bar.querySelector("#who-label").replaceChildren(document.createTextNode("Welcome "), strong);
+    bar.querySelector("#who-label").replaceChildren(greet, strong);
   };
 
   const cached = cachedTitle();
@@ -135,7 +141,7 @@ export async function initHeader({ current, history = false, visit = false, home
   logout.hidden = !admin;
   logout.addEventListener("click", async () => {
     try {
-      await api("/api/auth/logout", { method: "POST" });
+      await withBusy(logout, () => api("/api/auth/logout", { method: "POST" }), { label: "Logging out…" });
     } finally {
       // Before the reload, or the badge repaints "Admin" from this cache until
       // /api/auth/me answers — after you have just logged out.

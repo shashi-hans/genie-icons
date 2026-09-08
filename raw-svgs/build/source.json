@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "build",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/build-outline.svg"
+}

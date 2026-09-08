@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "chatbubble",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/chatbubble-outline.svg"
+}

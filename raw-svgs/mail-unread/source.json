@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "mail-unread",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/mail-unread-outline.svg"
+}

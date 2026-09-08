@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "stats-chart",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/stats-chart-outline.svg"
+}

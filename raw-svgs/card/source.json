@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "card",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/card-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "swap-vertical",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/swap-vertical-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "sync-circle",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/sync-circle-outline.svg"
+}

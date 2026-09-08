@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "egg",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/egg-outline.svg"
+}

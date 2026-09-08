@@ -1,0 +1,7 @@
+{
+  "source": "ph",
+  "set": "Phosphor",
+  "base": "game-controller",
+  "licence": "MIT",
+  "origin": "name matches the upstream Phosphor set"
+}

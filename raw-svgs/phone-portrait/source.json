@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "phone-portrait",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/phone-portrait-outline.svg"
+}

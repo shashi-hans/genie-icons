@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "bluetooth",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/bluetooth-outline.svg"
+}

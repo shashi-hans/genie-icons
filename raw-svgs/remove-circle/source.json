@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "remove-circle",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/remove-circle-outline.svg"
+}

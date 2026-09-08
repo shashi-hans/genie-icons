@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "devices-off",
+  "licence": "MIT",
+  "origin": "recovered from the rename in commit 33f6aee15"
+}

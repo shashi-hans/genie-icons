@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "layout-grid-remove",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/layout-grid-remove.svg"
+}

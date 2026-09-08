@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "terminal",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/terminal-outline.svg"
+}

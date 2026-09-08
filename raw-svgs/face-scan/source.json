@@ -1,0 +1,7 @@
+{
+  "source": "cs",
+  "set": "Coverstack",
+  "base": "face-scan",
+  "licence": "MIT",
+  "origin": "drawn for this project"
+}

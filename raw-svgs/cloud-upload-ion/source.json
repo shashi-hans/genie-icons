@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "cloud-upload",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/cloud-upload-outline.svg"
+}

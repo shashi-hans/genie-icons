@@ -78,7 +78,7 @@
 
       /* Same body width as the resizer and the generator, so the three tools
          line up rather than this one running edge to edge. */
-      main { width: 1100px; margin: 0 auto; padding: 28px 20px 48px; }
+      main { width: min(1100px, 100%); margin: 0 auto; padding: 28px clamp(14px, 4vw, 20px) 48px; }
       /* The heading for whatever the grid is currently showing, with the count
          that used to sit in the controls row. */
       .section-bar {
@@ -98,7 +98,7 @@
 
       #grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
         /* Rows keep their natural height. A grid's rows stretch by default, and
            with only a few rows on screen that inflated every cell to share the
            leftover height. Spare space belongs below the grid, not inside the
@@ -144,7 +144,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        /* The card is min(Npx, 100%) of what this padding leaves, so on a phone
+           this is the whole margin the dialog gets. */
+        padding: clamp(10px, 3vw, 20px);
       }
       .modal-backdrop {
         position: absolute;
@@ -206,6 +208,13 @@
       .modal-credit .value { font-weight: 600; word-break: break-word; }
       .modal-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
       .modal-controls .ctl { height: 34px; }
+      /* The dialog's own shorter control height, back up to a tappable one. */
+      @media (pointer: coarse) and (max-width: 900px) {
+        .modal-controls .ctl { height: 44px; }
+        /* The select and the slider fill the group from app.css. The colour well
+           is sized here, so it has to grow here too. */
+        .ctl input[type="color"] { width: 44px; height: 36px; }
+      }
       .weight-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
       .weight-tabs button {
         background: var(--panel);
@@ -267,7 +276,10 @@
       .gen-row input { flex: 1; }
       .gen-status { color: var(--muted); min-height: 18px; margin-bottom: 8px; }
       .gen-status.error { color: var(--bad); }
-      .gen-weights { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 0 0 12px; }
+      /* Six across when there is room. Fixed at six they were 35px cells on a
+           phone — the icon inside smaller than the caption under it. auto-fit
+           wraps to three and two instead of shrinking past legible. */
+        .gen-weights { display: grid; grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); gap: 8px; margin: 0 0 12px; }
       .gen-weights figure { margin: 0; text-align: center; }
       .gen-weights .gen-cell {
         border: 1px solid var(--border); border-radius: 8px; padding: 8px;
@@ -282,7 +294,7 @@
       .gen-panel[hidden] { display: none; }
       .gen-note { color: var(--muted); font-size: 12px; line-height: 1.45; margin: 6px 0 8px; }
       .gen-note strong { color: var(--fg); font-weight: 600; }
-      .gen-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+      .gen-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 8px; }
       .gen-fields input { width: 100%; }
       .gen-fields .full { grid-column: 1 / -1; }
       #gen-paste { width: 100%; min-height: 88px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
@@ -359,14 +371,16 @@
       <div class="site-bar">
         <a class="brand" href="./index.html">Genie Icons<span class="brand-mark" aria-hidden="true">🧞</span></a>
         <nav>
-          <a class="btn" href="./gallery.html" aria-current="page">Icon Gallery</a>
-          <a class="btn" href="./generator.html">Icon Generator</a>
-          <a class="btn" href="./resizer.html">Icon Resizer</a>
-          <a class="btn" href="./theme.html">Icon Theme</a>
-          <button class="btn" type="button" data-theme-toggle aria-label="Toggle theme">🌙 Dark</button>
+          <div class="site-tools">
+            <a class="btn" href="./gallery.html" aria-current="page">Icon Gallery</a>
+            <a class="btn" href="./generator.html">Icon Generator</a>
+            <a class="btn" href="./resizer.html">Icon Resizer</a>
+            <a class="btn" href="./theme.html">Icon Theme</a>
+          </div>
+          <button class="btn" type="button" data-theme-toggle aria-label="Toggle theme"><span class="tgl-icon">🌙</span><span class="tgl-word">Dark</span></button>
           <div class="who">
             <button class="who-badge" id="who-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="who-menu">
-              <span id="who-label">Welcome</span>
+              <span id="who-label"><span class="who-greet">Welcome</span></span>
               <span class="caret" aria-hidden="true">▾</span>
             </button>
             <div class="who-menu" id="who-menu" role="menu" hidden>
@@ -387,7 +401,7 @@
         <div class="sub">Click any icon to customize, copy a snippet, or download.</div>
       </div>
       <div class="controls">
-        <input id="search" type="search" placeholder="Search icon from list of 8470 icons ..." autocomplete="off" />
+        <input id="search" type="search" placeholder="Search icon from list of 9032 icons ..." autocomplete="off" />
         <button class="btn" id="search-go" type="button">Search</button>
         <span class="ctl">
           <label for="weight">weight</label>
@@ -433,6 +447,7 @@
         <div class="modal-preview" id="modal-preview"></div>
         <h2 id="modal-title"></h2>
         <div class="modal-meta" id="modal-meta"></div>
+        <div class="modal-credit" id="modal-source" hidden></div>
         <div class="modal-credit" id="modal-credit" hidden></div>
         <!-- Weight and size for this icon, chosen here rather than only in the
              control bar: the dialog is where an export is decided. Size drives
@@ -505,7 +520,9 @@
       import { initHeader } from "./lib/header.js";
       import { initFooter } from "./lib/footer.js";
       import { initTheme, onThemeChange } from "./lib/theme.js";
-      import { api, showToast, download } from "./lib/api.js";
+      import { api, showToast, download, recordUse } from "./lib/api.js";
+      import { withBusy } from "./lib/busy.js";
+      import { readSearch, writeSearch, recordActivity, readActivity, clearActivity } from "./lib/local-store.js";
 
       const grid = document.getElementById("grid");
       const search = document.getElementById("search");
@@ -528,6 +545,10 @@
       const modalTitle = document.getElementById("modal-title");
       const modalMeta = document.getElementById("modal-meta");
       const modalCredit = document.getElementById("modal-credit");
+      const modalSource = document.getElementById("modal-source");
+      // Set code to name, as /api/icons sends it. Every page of results carries
+      // the same table, so the last one in wins and they never differ.
+      let setNames = {};
       const modalWeightSel = document.getElementById("modal-weight");
       const modalSizeSel = document.getElementById("modal-size");
       // The sizes the export dropdown offers. The control bar's slider is
@@ -754,7 +775,7 @@
       // not a measured popularity order. Every name is verified to exist in the
       // catalogue. Edit the array to change the set; nothing else depends on it.
       //
-      // Searching still reaches all 8,470: the moment there is a query, this is
+      // Searching still reaches all 9,032: the moment there is a query, this is
       // out of the way and the server does the filtering.
       const POPULAR = [
         "magnifying-glass", "house", "list", "link", "x",
@@ -783,10 +804,36 @@
         // Only the newest request may paint: typing fires several and they can
         // come back out of order.
         const ticket = ++pageRequest;
+
+        // A page already seen paints from storage with no request. Keyed partly
+        // on catalogueTotal, so a rebuild invalidates it by not matching.
+        const cachedPage = readSearch(currentQuery, pageOffset, pageLimit, catalogueTotal);
+        if (cachedPage) {
+          paintResults(cachedPage);
+          return;
+        }
+
         try {
           const res = await api(`/api/icons?${params.toString()}`);
           if (ticket !== pageRequest) return;
+          writeSearch(currentQuery, pageOffset, pageLimit, res.catalogueTotal ?? catalogueTotal, res);
+          paintResults(res);
+          return;
+        } catch (err) {
+          if (ticket !== pageRequest) return;
+          grid.innerHTML =
+            `<div class="empty">Could not load icons (${err.message}).<br/>` +
+            `The gallery needs the API: run <code>npm run dev</code>, ` +
+            `after <code>npm run build:icons</code>.</div>`;
+          countEl.textContent = "";
+          pager.hidden = true;
+          return;
+        }
+
+        function paintResults(res) {
           icons = res.icons || [];
+          recordActivity("search", currentQuery, { results: res.total ?? (res.icons || []).length });
+          if (res.sets) setNames = res.sets;
           pageTotal = res.total ?? icons.length;
           catalogueTotal = res.catalogueTotal ?? pageTotal;
           pageOffset = res.offset ?? pageOffset;
@@ -803,14 +850,6 @@
           }
           renderPager();
           setLoadingNote("");
-        } catch (err) {
-          if (ticket !== pageRequest) return;
-          grid.innerHTML =
-            `<div class="empty">Could not load icons (${err.message}).<br/>` +
-            `The gallery needs the API: run <code>npm run dev</code>, ` +
-            `after <code>npm run build:icons</code>.</div>`;
-          countEl.textContent = "";
-          pager.hidden = true;
         }
       }
 
@@ -838,7 +877,11 @@
       // that an icon redrawn upstream keeps its old artwork here until the entry
       // ages out or the version moves.
       const CACHE_KEY = "icon-genie.popular";
-      const SET_VERSION = 1;
+      // 2 adds the set-code table and the per-icon `source` that names which set
+      // drew an icon. 3 renames the stored name list to `askedFor`, because the
+      // set stored can be shorter than the set asked for once a name is hidden.
+      // An older entry lacks the field and is dropped rather than misread.
+      const SET_VERSION = 3;
       const CACHE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
       /** The stored set, or null when absent, stale, corrupt or for another list. */
@@ -853,7 +896,10 @@
         try {
           const hit = JSON.parse(raw);
           if (hit.version !== SET_VERSION) return null;
-          if (hit.names !== POPULAR.join(",")) return null;
+          // Compared against the names asked for, so editing POPULAR invalidates
+          // the entry. What was stored can legitimately be shorter, when a name
+          // is hidden or gone.
+          if (hit.askedFor !== POPULAR.join(",")) return null;
           if (!Array.isArray(hit.icons) || hit.icons.length === 0) return null;
           if (!hit.storedAt || Date.now() - hit.storedAt > CACHE_MAX_AGE_MS) return null;
           return hit;
@@ -864,15 +910,18 @@
         }
       }
 
-      function writePopularCache(icons, total) {
+      function writePopularCache(icons, total, sets) {
         try {
           localStorage.setItem(
             CACHE_KEY,
             JSON.stringify({
               version: SET_VERSION,
-              names: POPULAR.join(","),
+              askedFor: POPULAR.join(","),
               storedAt: Date.now(),
               catalogueTotal: total,
+              // Stored with the artwork, because an icon's `source` is a code and
+              // means nothing without the table that names it.
+              sets,
               icons,
             })
           );
@@ -911,6 +960,7 @@
         const cached = readPopularCache();
         if (cached) {
           catalogueTotal = cached.catalogueTotal ?? 0;
+          setNames = cached.sets ?? {};
           if (!weightsApplied) {
             applyWeightOptions(Object.keys(cached.icons[0].weights || {}));
             weightsApplied = true;
@@ -920,31 +970,43 @@
         }
 
         try {
-          const res = await api(`/api/icons?limit=400&offset=0`);
+          // limit=1, because only the three table-level fields are read from this
+          // response. A full page carries every weight's markup for each icon —
+          // megabytes downloaded to learn the catalogue's size.
+          const res = await api(`/api/icons?limit=1&offset=0`);
           if (ticket !== pageRequest) return;
           if (!weightsApplied) {
             applyWeightOptions(res.weights);
             weightsApplied = true;
           }
           catalogueTotal = res.catalogueTotal ?? res.total ?? 0;
+          if (res.sets) setNames = res.sets;
 
           // One request per name: /api/icons pages alphabetically, so the 50 are
           // not reachable in a slice. They resolve in parallel and keep POPULAR's
           // order, and a name that ever stops existing is skipped rather than
           // rendering a hole.
+          // A name that answers but holds no match is absent from the catalogue,
+          // which is a permanent fact: it was hidden by an admin, or renamed. A
+          // name whose request threw is unknown, and that difference decides
+          // whether the result is worth storing. Collapsing both into null meant
+          // one admin-hidden icon in POPULAR stopped the set caching forever.
           const found = await Promise.all(
             POPULAR.map((name) =>
               api(`/api/icons?q=${encodeURIComponent(name)}&limit=400`)
-                .then((r) => (r.icons || []).find((i) => i.name === name) || null)
-                .catch(() => null)
+                .then((r) => ({ icon: (r.icons || []).find((i) => i.name === name) || null }))
+                .catch(() => ({ failed: true }))
             )
           );
           if (ticket !== pageRequest) return;
-          const list = found.filter(Boolean);
+          const list = found.map((r) => r.icon).filter(Boolean);
           showPopular(list, catalogueTotal);
-          // Stored only when the whole set resolved: a partial set would be
-          // served back as though it were complete.
-          if (list.length === POPULAR.length) writePopularCache(list, catalogueTotal);
+          // Stored when every name was actually asked and answered. A partial
+          // set from a failed request would otherwise be served back as though
+          // it were the whole thing.
+          if (!found.some((r) => r.failed) && list.length) {
+            writePopularCache(list, catalogueTotal, setNames);
+          }
         } catch (err) {
           if (ticket !== pageRequest) return;
           grid.innerHTML =
@@ -965,11 +1027,14 @@
        * no longer fires anything on its own, so an empty box plus Search is how
        * you get back to the popular set.
        */
+      // Returns the load, so a caller wrapping this in withBusy holds the button
+      // for as long as the request actually takes rather than resolving at once
+      // and re-enabling it mid-flight.
       function runSearch() {
         const next = search.value.trim().toLowerCase();
-        if (next === currentQuery) return;
+        if (next === currentQuery) return Promise.resolve();
         currentQuery = next;
-        loadPage({ reset: true });
+        return loadPage({ reset: true });
       }
 
       /**
@@ -992,6 +1057,23 @@
         modalTitle.textContent = modalIcon.component;
         const colorNote = currentColor ? currentColor : "currentColor";
         modalMeta.textContent = `${modalIcon.name} · weight ${modalWeight} · ${currentSize}px · ${colorNote}`;
+
+        // Which set drew this icon. Its own labelled line, above the credit,
+        // because it is part of the icon's identity and decides which licence
+        // applies to it. Hidden for an icon with no set, which is a contributed
+        // one or a catalogue built before provenance was recorded.
+        const sourceName = setNames[modalIcon.source] || "";
+        modalSource.hidden = !sourceName;
+        if (sourceName) {
+          modalSource.replaceChildren();
+          const label = document.createElement("span");
+          label.className = "label";
+          label.textContent = "Source :";
+          const value = document.createElement("span");
+          value.className = "value";
+          value.textContent = sourceName;
+          modalSource.append(label, value);
+        }
 
         // The credit gets its own labelled line rather than being buried in the
         // meta string. The name is set with textContent, never innerHTML: it is
@@ -1060,15 +1142,47 @@
         refreshModal();
       });
 
+      // Which of the two numbers each export button adds to. A button missing
+      // from here is not an export and is not counted.
+      const USE_ACTIONS = {
+        jsx: "copy",
+        import: "copy",
+        svg: "copy",
+        "dl-svg": "download",
+        "dl-png": "download",
+      };
+
+      // What the button says while it works. A copy or a download finishes in a
+      // frame or two, so the ring on its own is easy to miss; the label is what
+      // makes the click legible. The busy floor holds both for a second.
+      const BUSY_LABELS = {
+        jsx: "Copying…",
+        import: "Copying…",
+        svg: "Copying…",
+        "dl-svg": "Downloading…",
+        "dl-png": "Downloading…",
+      };
+
       modal.addEventListener("click", (e) => {
         if (e.target.dataset.close !== undefined) closeModal();
         const act = e.target.dataset.act;
         if (!act || !modalIcon) return;
-        if (act === "jsx") copy(buildJSX(modalIcon, modalWeight), "Copied JSX");
-        else if (act === "import") copy(buildImport(modalIcon), "Copied import");
-        else if (act === "svg") copy(buildSVG(modalIcon, modalWeight, false), "Copied SVG");
-        else if (act === "dl-svg") downloadSVG(modalIcon, modalWeight);
-        else if (act === "dl-png") downloadPNG(modalIcon, modalWeight);
+        const btn = e.target.closest("[data-act]");
+        const run = () => {
+          if (act === "jsx") return copy(buildJSX(modalIcon, modalWeight), "Copied JSX");
+          if (act === "import") return copy(buildImport(modalIcon), "Copied import");
+          if (act === "svg") return copy(buildSVG(modalIcon, modalWeight, false), "Copied SVG");
+          if (act === "dl-svg") return downloadSVG(modalIcon, modalWeight);
+          if (act === "dl-png") return downloadPNG(modalIcon, modalWeight);
+        };
+        if (BUSY_LABELS[act]) withBusy(btn, run, { label: BUSY_LABELS[act] });
+        else run();
+        // After the export, and never awaited: the count is worth nothing if it
+        // makes the copy any slower.
+        if (USE_ACTIONS[act]) {
+          recordUse(modalIcon.name, USE_ACTIONS[act]);
+          recordActivity(USE_ACTIONS[act], modalIcon.name);
+        }
       });
 
       document.addEventListener("keydown", (e) => {
@@ -1151,12 +1265,16 @@
         if (act === "rename") return showModalConfirm("rename");
         if (act === "delete") return showModalConfirm("delete");
         if (act === "cancel") return showModalConfirm(null);
-        if (act === "rename-save") return adminRename();
-        if (act === "delete-confirm") return adminDelete();
+        // Both hit the server. The ring goes on the button pressed, and withBusy
+        // ignores a second click while the first is still running.
+        const btn = e.target.closest("[data-adminact]");
+        if (act === "rename-save") return withBusy(btn, adminRename, { label: "Saving…" });
+        if (act === "delete-confirm") return withBusy(btn, adminDelete, { label: "Deleting…" });
       });
 
       /* --- Control bar wiring --------------------------------------------- */
-      document.getElementById("search-go").addEventListener("click", runSearch);
+      const searchGo = document.getElementById("search-go");
+      searchGo.addEventListener("click", () => withBusy(searchGo, runSearch, { label: "Searching…" }));
       search.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -1170,14 +1288,14 @@
       });
       prevBtn.addEventListener("click", () => {
         pageOffset = Math.max(0, pageOffset - pageLimit);
-        loadPage().then(() => window.scrollTo({ top: 0 }));
+        withBusy(prevBtn, loadPage, { label: "Loading…" }).then(() => window.scrollTo({ top: 0 }));
       });
       nextBtn.addEventListener("click", () => {
         // Step by the number actually on screen rather than by PAGE_SIZE: the last
         // page is short, and stepping by the full page from it would skip past
         // icons that were never shown.
         pageOffset = pageOffset + icons.length;
-        loadPage().then(() => window.scrollTo({ top: 0 }));
+        withBusy(nextBtn, loadPage, { label: "Loading…" }).then(() => window.scrollTo({ top: 0 }));
       });
       sizeEl.addEventListener("input", () => {
         currentSize = Number(sizeEl.value);
@@ -1230,10 +1348,18 @@
         histList.innerHTML = "";
         try {
           const { entries } = await api("/api/history");
-          histStatus.textContent = entries.length
+          const local = readActivity();
+          histStatus.textContent = entries.length || local.length
             ? ""
-            : "Nothing yet. Generate an icon and it shows up here.";
-          histList.innerHTML = entries.map(histRowHtml).join("");
+            : "Nothing yet. Search for an icon, or generate one, and it shows up here.";
+          // One list, newest first. The two sources have different shapes and
+          // different time fields, so each row is tagged with how to render it
+          // and sorted on a single number.
+          const merged = [
+            ...entries.map((e) => ({ at: Date.parse(e.createdAt) || 0, html: histRowHtml(e) })),
+            ...local.map((e) => ({ at: e.at || 0, html: localRowHtml(e) })),
+          ].sort((a, b) => b.at - a.at);
+          histList.innerHTML = merged.map((r) => r.html).join("") + clearLocalHtml(local);
         } catch (err) {
           histStatus.className = "gen-status error";
           histStatus.textContent = `Couldn't load history: ${err.message}`;
@@ -1254,7 +1380,56 @@
         );
       }
 
+      /**
+       * This device's own searches and exports, which the server never sees.
+       *
+       * Text is escaped rather than interpolated: a query is whatever the user
+       * typed, and it is read back out of storage where anything could have put
+       * it. The rest of this dialog builds rows the same way, from server data.
+       */
+      const escapeText = (value) =>
+        String(value).replace(/[&<>"']/g, (c) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+        );
+
+      /** One locally recorded action as a row, matching histRowHtml's shape. */
+      function localRowHtml(e) {
+        const when = new Date(e.at).toLocaleString();
+        const times = e.count > 1 ? ` · ${e.count}\u00d7` : "";
+        const found =
+          e.type === "search" && typeof e.results === "number"
+            ? ` · ${e.results.toLocaleString()} found`
+            : "";
+        return (
+          `<div class="hist-row">` +
+          `<span class="grow"><span class="hist-name">${escapeText(e.label)}</span>` +
+          `<div class="hist-meta">${when}${times}${found}</div></span>` +
+          `<span class="tag">${escapeText(e.type)}</span></div>`
+        );
+      }
+
+      /**
+       * The control for forgetting what this device recorded.
+       *
+       * Below the list rather than above it: the rows are one merged history now,
+       * and a heading in the middle of them would imply the ones under it were a
+       * separate section.
+       */
+      function clearLocalHtml(entries) {
+        if (!entries.length) return "";
+        return (
+          `<div class="hist-meta" style="margin:14px 0 0">` +
+          `${entries.length} recorded on this device ` +
+          `<button type="button" class="btn" id="hist-clear-local">Clear</button></div>`
+        );
+      }
+
       histModal.addEventListener("click", (e) => {
+        if (e.target.id === "hist-clear-local") {
+          clearActivity();
+          openHistory();
+          return;
+        }
         if (e.target.dataset.histclose !== undefined) histModal.hidden = true;
       });
       document.addEventListener("keydown", (e) => {
@@ -1267,7 +1442,8 @@
       // Wired before the identity request, not inside its .then: the button ships
       // in the generated header, so it is clickable from the first paint and a
       // click during the round trip used to be dropped.
-      document.getElementById("hist-open")?.addEventListener("click", openHistory);
+      const histOpen = document.getElementById("hist-open");
+      histOpen?.addEventListener("click", () => withBusy(histOpen, openHistory, { label: "Loading…" }));
       initHeader({ current: "gallery", history: true, visit: true }).then((who) => {
         me = who;
         // An admin arriving mid-render should see the admin row on an icon that

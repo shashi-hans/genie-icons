@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "ribbon",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/ribbon-outline.svg"
+}

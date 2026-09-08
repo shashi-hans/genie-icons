@@ -70,8 +70,39 @@ fs.writeFileSync(path.join(SRC_DIR, "index.ts"), indexSource);
 // render real icons inline AND switch weights without fetching files (works
 // over file://). Larger than regular-only, but it is a docs artifact only.
 fs.mkdirSync(DOCS_DIR, { recursive: true });
+
+/**
+ * Which set drew an icon, from the source.json beside its artwork.
+ *
+ * The name carries a two-letter set code when another set already held the bare
+ * name, but the code cannot be parsed off the end of it: `log-in`, `zoom-in`,
+ * `arrows-in` and `water-ph` all end in something that looks like one and none
+ * of them is. Only the recorded `base` says where the name stops.
+ */
+function provenance(dir) {
+  try {
+    const meta = JSON.parse(fs.readFileSync(path.join(dir, "source.json"), "utf8"));
+    if (!meta.source) return {};
+    if (meta.set) setNames[meta.source] = meta.set;
+    return { source: meta.source, base: meta.base ?? undefined };
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Set code to display name, filled in as the artwork is read.
+ *
+ * The catalogue carries the code per icon and the names once here, rather than
+ * the name on all 8,468 of them. Built from the artwork itself, so a set added
+ * later needs no edit here and a name cannot drift from what the source.json
+ * beside the drawing says.
+ */
+const setNames = {};
+
 const icons = manifest.map((m) => {
   const dir = path.join(RAW_SVGS_DIR, m.name);
+  const from = provenance(dir);
 
   // Stroke-based (AI) icon: derive all six weights from its centerline paths so
   // the gallery renders them, same as StrokeIcon does at runtime.
@@ -90,6 +121,7 @@ const icons = manifest.map((m) => {
       component: m.component,
       kind: "stroke",
       centerline,
+      ...from,
     };
   }
 
@@ -109,11 +141,12 @@ const icons = manifest.map((m) => {
   for (const weight of WEIGHTS) {
     if (!weights[weight]) weights[weight] = weights.regular;
   }
-  return { name: m.name, component: m.component, weights };
+  return { name: m.name, component: m.component, weights, ...from };
 });
 const docsData = {
   total: manifest.length,
   weights: WEIGHTS,
+  sets: Object.fromEntries(Object.entries(setNames).sort(([a], [b]) => a.localeCompare(b))),
   icons,
 };
 fs.writeFileSync(

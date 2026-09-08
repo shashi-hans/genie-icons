@@ -51,10 +51,11 @@ ${componentName}.displayName = "${componentName}";
 //     emitted when it pays off, so other icons stay fully lazy.
 // Every label the switch must answer, grouped under the weight it renders as.
 // The removed weights ride along with their replacement, so keeping them costs
-// no extra markup: "light" sits with thin, "bold" and "sharp" with regular.
+// no extra markup: "light" sits with thin and "sharp" with regular.
 const WEIGHT_LABELS = {
   thin: ["thin", "light"],
-  regular: ["regular", "bold", "sharp"],
+  regular: ["regular", "sharp"],
+  bold: ["bold"],
   fill: ["fill"],
   duotone: ["duotone"],
 };
@@ -155,16 +156,27 @@ const iconDirs = fs
 const WEIGHT_FILE_RE = new RegExp(`-(${SOURCE_WEIGHTS.join("|")})\\.svg$`);
 
 const manifest = [];
+// Keyed on the lowercased component name, not the name itself. `qrcode` and
+// `qr-code` become Qrcode and QrCode: two valid identifiers, but one filename on
+// a case-insensitive filesystem, and TypeScript refuses a program holding both
+// (TS1149). Ten such pairs exist across Tabler, Lucide and Phosphor.
 const seenComponents = new Map();
+const componentKey = (name) => name.toLowerCase();
 let skipped = 0;
 
 for (const iconName of iconDirs) {
   const dir = path.join(RAW_SVGS_DIR, iconName);
 
   const componentName = toPascalCase(iconName);
-  if (seenComponents.has(componentName)) {
+  const key = componentKey(componentName);
+  const held = seenComponents.get(key);
+  if (held) {
     console.warn(
-      `  name collision: "${iconName}" and "${seenComponents.get(componentName)}" both map to ${componentName}; keeping "${seenComponents.get(componentName)}".`
+      `  name collision: "${iconName}" and "${held.icon}" both map to ` +
+        (held.component === componentName
+          ? componentName
+          : `${componentName}/${held.component}, which differ only in case`) +
+        `; keeping "${held.icon}".`
     );
     skipped++;
     continue;
@@ -188,7 +200,7 @@ for (const iconName of iconDirs) {
         `  ${iconName}: ignoring ${ignored.length} weight files — the centerline file takes precedence. Rename one of the two.`
       );
     }
-    seenComponents.set(componentName, iconName);
+    seenComponents.set(key, { icon: iconName, component: componentName });
     fs.writeFileSync(
       path.join(ICONS_OUT_DIR, `${componentName}.tsx`),
       buildStrokeComponent(componentName, centerline)
@@ -226,7 +238,7 @@ for (const iconName of iconDirs) {
     if (!innerByWeight[weight]) innerByWeight[weight] = regularInner;
   }
 
-  seenComponents.set(componentName, iconName);
+  seenComponents.set(key, { icon: iconName, component: componentName });
 
   fs.writeFileSync(
     path.join(ICONS_OUT_DIR, `${componentName}.tsx`),

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "alert",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/alert-outline.svg"
+}

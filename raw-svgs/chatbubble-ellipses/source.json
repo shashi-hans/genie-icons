@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "chatbubble-ellipses",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/chatbubble-ellipses-outline.svg"
+}

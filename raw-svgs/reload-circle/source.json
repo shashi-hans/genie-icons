@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "reload-circle",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/reload-circle-outline.svg"
+}

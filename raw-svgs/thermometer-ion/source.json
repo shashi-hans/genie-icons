@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "thermometer",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/thermometer-outline.svg"
+}

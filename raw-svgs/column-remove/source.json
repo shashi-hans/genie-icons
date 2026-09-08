@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "column-remove",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/column-remove.svg"
+}

@@ -1,7 +1,7 @@
 {
   "name": "icon-genie",
   "version": "0.4.0",
-  "description": "A tree-shakeable React icon library of 8469 icons, with a weight prop (thin, regular, fill, duotone). Artwork from Phosphor, Lucide, Feather, Tabler, Heroicons, Iconoir, Material Symbols and Ionicons.",
+  "description": "A tree-shakeable React icon library of 9032 icons, with a weight prop (thin, regular, bold, fill, duotone). Artwork from Tabler, Phosphor, Lucide and Ionicons.",
   "license": "MIT",
   "author": "Shashi Hans",
   "repository": {
@@ -47,6 +47,8 @@
   ],
   "scripts": {
     "import:phosphor": "node scripts/import-phosphor.js",
+    "fetch:sources": "node scripts/fetch-sources.js",
+    "merge:sources": "node scripts/merge-sources.js",
     "draft:gap-icons": "node scripts/draft-gap-icons.js",
     "build:icons": "node scripts/optimize-svgs.js && node scripts/generate-components.js && node scripts/generate-index.js && node scripts/build-header.js && node scripts/build-gallery.js",
     "build": "tsup",

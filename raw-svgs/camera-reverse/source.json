@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "camera-reverse",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/camera-reverse-outline.svg"
+}

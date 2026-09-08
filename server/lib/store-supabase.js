@@ -260,6 +260,7 @@ export function createSupabaseStore() {
   // page load would otherwise fill the log.
   let warnedNoHiddenTable = false;
   let warnedNoVisitCounter = false;
+  let warnedNoUseCounter = false;
 
   // The hidden set is read on every catalogue build, so it is cached. Hiding or
   // restoring clears it, which makes the change immediate on the instance that
@@ -625,6 +626,78 @@ export function createSupabaseStore() {
           if ((a.country === "ZZ") !== (b.country === "ZZ")) return a.country === "ZZ" ? 1 : -1;
           return b.visitors - a.visitors || b.views - a.views;
         });
+    },
+
+    /**
+     * Count a copy or download. An empty name is the resizer, which exports a
+     * file the user supplied rather than an icon of ours and so only raises a
+     * total. `count` covers one gesture that exports several files at once; the
+     * route clamps it. Never throws: the caller is a beacon fired behind someone's
+     * copy button, and a lost count must not become a visible failure.
+     */
+    async recordIconUse(name, action, count = 1) {
+      try {
+        await sb("POST", "/rpc/record_icon_use", {
+          body: {
+            p_name: String(name ?? ""),
+            p_action: action === "copy" ? "copy" : "download",
+            p_count: Number(count) || 1,
+          },
+        });
+      } catch (err) {
+        // 404 is migration 0005 not applied yet. Same reasoning as recordVisit:
+        // the site works without the tally, so warn once and carry on.
+        if (err?.status === 404) {
+          if (!warnedNoUseCounter) {
+            warnedNoUseCounter = true;
+            console.warn(
+              "supabase: no record_icon_use function — apply " +
+                "supabase/migrations/0005_icon_uses.sql. Icon uses are not counted " +
+                "until then; everything else works."
+            );
+          }
+          return;
+        }
+        console.error("recordIconUse failed:", err);
+      }
+    },
+
+    /**
+     * The busiest icons first, with the site-wide totals beside them. Aggregates
+     * only — no row anywhere links an export to a guest id.
+     */
+    async listIconUses(limit = 100) {
+      const capped = Math.min(Math.max(Number(limit) || 100, 1), 500);
+      let rows = [];
+      let counters = [];
+      try {
+        // Ordered on the stored total, so the cap takes the busiest icons
+        // rather than an arbitrary hundred.
+        [rows, counters] = await Promise.all([
+          sb("GET", `/icon_uses?order=total.desc,name.asc&limit=${capped}`),
+          sb("GET", "/site_counters?key=in.(icon_copies,icon_downloads,resizer_exports)"),
+        ]);
+      } catch (err) {
+        // The table arrives with migration 0005. An empty tally reads as
+        // "nothing recorded yet", which is what the page shows before the first
+        // export anyway.
+        if (err?.status !== 404) throw err;
+        return { icons: [], totals: { copies: 0, downloads: 0, resizerExports: 0 } };
+      }
+      const value = (key) => Number((counters ?? []).find((c) => c.key === key)?.value ?? 0);
+      return {
+        icons: (rows ?? []).map((r) => ({
+          name: r.name,
+          copies: Number(r.copies ?? 0),
+          downloads: Number(r.downloads ?? 0),
+          lastUsed: iso(r.last_used),
+        })),
+        totals: {
+          copies: value("icon_copies"),
+          downloads: value("icon_downloads"),
+          resizerExports: value("resizer_exports"),
+        },
+      };
     },
   };
 }

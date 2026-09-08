@@ -14,15 +14,39 @@ export const SRC_DIR = path.join(ROOT, "src");
 export const DOCS_DIR = path.join(ROOT, "docs");
 export const MANIFEST_PATH = path.join(ICONS_OUT_DIR, "manifest.json");
 
-// What the library exposes. `light`, `bold` and `sharp` were dropped; they still
-// type-check and render (thin, regular, regular) so existing calls keep working.
-export const WEIGHTS = ["thin", "regular", "fill", "duotone"];
+// What the library exposes. `light` and `sharp` are not offered; they still
+// type-check and render (thin and regular) so existing calls keep working.
+export const WEIGHTS = ["thin", "regular", "bold", "fill", "duotone"];
 
 // What actually exists on disk under raw-svgs/<icon>/. Phosphor ships these six
 // and nothing else, so importing and drafting work from this list while the
 // build emits the list above. `light` is still imported and still on disk; it is
 // no longer a weight the library offers, and weight="light" renders thin.
 export const SOURCE_WEIGHTS = ["thin", "light", "regular", "bold", "fill", "duotone"];
+
+// The longest an icon name may be. A name becomes a component name, an export,
+// a directory and a URL segment, so it is bounded in one place.
+export const MAX_NAME_CHARS = 60;
+
+/**
+ * Anything to the one name shape this project uses: lowercase, alphanumeric
+ * runs joined by single dashes, no leading or trailing dash.
+ *
+ * Lives here rather than in server/lib/validate.js because the build needs it
+ * and importing the server's validator would pull its HTTP layer into a script.
+ * Upstream artwork arrives with names the build has to fold: Material Symbols
+ * separates words with `_`, and some sets ship mixed case.
+ */
+export function kebabName(value) {
+  // Truncated before the dashes are trimmed, not after: cutting at 60 characters
+  // can land on a dash, and a name ending in one becomes a directory, an export
+  // and a URL segment with a trailing dash on it.
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .slice(0, MAX_NAME_CHARS)
+    .replace(/^-+|-+$/g, "");
+}
 
 // "airplane-in-flight" -> "AirplaneInFlight". Guards against a leading digit
 // (not valid as the start of a JS identifier) by prefixing "Icon".
@@ -50,8 +74,14 @@ export function extractSvgInner(svg) {
 
 // A centerline icon carries at most this many paths — one per disconnected line
 // (a clock is a ring plus its hands; a TV remote is a body plus its buttons).
-// Matches MAX_PATHS in sh-icon-genie, which enforces the same ceiling upstream.
-export const MAX_CENTERLINE_PATHS = 8;
+//
+// This is the ceiling for artwork on disk, and it is not the ceiling for a
+// contribution: sh-icon-genie and server/lib/validate.js both hold generated and
+// submitted icons to 8, because a model asked for more than that returns noise.
+// Imported artwork is drawn by hand and is not bounded by that reasoning —
+// Tabler's busiest icon is 23 paths. Holding the build to 8 would mean rejecting
+// it, or storing it as a single weight with no fill or duotone derived.
+export const MAX_CENTERLINE_PATHS = 24;
 
 // AI-generated (stroke-based) icons ship as one "<name>.centerline.svg" holding
 // up to MAX_CENTERLINE_PATHS <path d="…"> elements and no paint attributes.
