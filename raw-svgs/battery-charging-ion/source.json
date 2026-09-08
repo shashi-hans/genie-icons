@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "battery-charging",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/battery-charging-outline.svg"
+}

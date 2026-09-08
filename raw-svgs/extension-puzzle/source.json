@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "extension-puzzle",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/extension-puzzle-outline.svg"
+}

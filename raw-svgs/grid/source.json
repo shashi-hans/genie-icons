@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "grid",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/grid-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "shield-checkmark",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/shield-checkmark-outline.svg"
+}

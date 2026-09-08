@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "relation-many-to-many",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/relation-many-to-many.svg"
+}

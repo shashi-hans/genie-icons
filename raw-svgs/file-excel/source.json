@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "file-excel",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/file-excel.svg"
+}

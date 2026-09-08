@@ -1,0 +1,7 @@
+{
+  "source": "ph",
+  "set": "Phosphor",
+  "base": "map-pin",
+  "licence": "MIT",
+  "origin": "name matches the upstream Phosphor set"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "navigate-circle",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/navigate-circle-outline.svg"
+}

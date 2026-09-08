@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "file-tray-stacked",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/file-tray-stacked-outline.svg"
+}

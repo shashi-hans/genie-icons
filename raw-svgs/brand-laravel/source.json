@@ -1,0 +1,7 @@
+{
+  "source": "tb",
+  "set": "Tabler",
+  "base": "brand-laravel",
+  "licence": "MIT",
+  "file": "tabler/tabler-icons/icons/outline/brand-laravel.svg"
+}

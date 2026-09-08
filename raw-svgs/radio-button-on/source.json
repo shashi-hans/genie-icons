@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "radio-button-on",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/radio-button-on-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "lock-open",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/lock-open-outline.svg"
+}

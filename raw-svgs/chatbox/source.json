@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "chatbox",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/chatbox-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "git-merge",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/git-merge-outline.svg"
+}

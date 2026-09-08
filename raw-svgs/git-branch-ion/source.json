@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "git-branch",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/git-branch-outline.svg"
+}

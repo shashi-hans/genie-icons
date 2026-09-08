@@ -1,0 +1,7 @@
+{
+  "source": "ph",
+  "set": "Phosphor",
+  "base": "train-regional",
+  "licence": "MIT",
+  "origin": "name matches the upstream Phosphor set"
+}

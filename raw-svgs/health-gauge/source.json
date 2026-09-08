@@ -1,0 +1,7 @@
+{
+  "source": "cs",
+  "set": "Coverstack",
+  "base": "health-gauge",
+  "licence": "MIT",
+  "origin": "drawn for this project"
+}

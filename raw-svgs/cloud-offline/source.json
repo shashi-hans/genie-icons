@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "cloud-offline",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/cloud-offline-outline.svg"
+}

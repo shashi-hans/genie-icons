@@ -1,0 +1,9 @@
+{
+  "source": "logo",
+  "set": "Brand logo",
+  "base": "logo-ionitron",
+  "licence": "MIT",
+  "upstream": "Ionicons",
+  "trademark": "owned by the brand depicted; not licensed here",
+  "origin": "Ionicons brand logo, extracted from the Ionicons font"
+}

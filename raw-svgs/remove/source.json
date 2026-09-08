@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "remove",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/remove-outline.svg"
+}

@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "barcode",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/barcode-outline.svg"
+}

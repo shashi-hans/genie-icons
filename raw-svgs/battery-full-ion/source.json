@@ -1,0 +1,7 @@
+{
+  "source": "ion",
+  "set": "Ionicons",
+  "base": "battery-full",
+  "licence": "MIT",
+  "file": "ionic-team/ionicons/src/svg/battery-full-outline.svg"
+}
