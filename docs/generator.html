@@ -400,7 +400,8 @@
     <script type="module">
       import { buildChatPrompt, generateWithKey, parsePastedIcon, toCenterlineSvg } from "./genie-bundle.js";
       import { deriveWeightInner } from "./stroke-weights.js";
-      import { api, showToast, download } from "./lib/api.js";
+      import { api, showToast, download, recordUse } from "./lib/api.js";
+      import { withBusy } from "./lib/busy.js";
       import { initTheme } from "./lib/theme.js";
       import { initHeader } from "./lib/header.js";
       import { initFooter } from "./lib/footer.js";
@@ -409,7 +410,8 @@
       initTheme();
       // Wired before the identity request: the button ships in the generated
       // header and is clickable from the first paint.
-      document.getElementById("hist-open")?.addEventListener("click", openHistory);
+      const histOpen = document.getElementById("hist-open");
+      histOpen?.addEventListener("click", () => withBusy(histOpen, openHistory, { label: "Loading…" }));
       initHeader({ current: "generator", history: true, visit: true });
       initFooter();
 
@@ -666,7 +668,6 @@
           genStatus.textContent = "Enter a description first.";
           return;
         }
-        genRun.disabled = true;
         genResult.hidden = true;
         genStatus.className = "gen-status busy";
         genStatus.textContent =
@@ -696,8 +697,6 @@
         } catch (err) {
           genStatus.className = "gen-status error";
           genStatus.textContent = `Couldn't generate: ${err.message}`;
-        } finally {
-          genRun.disabled = false;
         }
       }
       function renderGen() {
@@ -772,6 +771,10 @@
         else if (act === "dl-svg") downloadSVG(genIcon, weight);
         else if (act === "dl-png") downloadPNG(genIcon, weight);
         else if (act === "dl-centerline") downloadCenterline(genIcon);
+        // Counted under the icon's name, which is the name it carries into the
+        // gallery once approved, so its exports from here and from there are one
+        // number. Never awaited: the count must not delay the export.
+        recordUse(genIcon.name, act === "svg" ? "copy" : "download");
       }
 
       function openGate(act, weight) {
@@ -799,7 +802,6 @@
       gateSubmit.addEventListener("click", async () => {
         if (!genIcon || !pendingExport) return;
         const { act, weight } = pendingExport;
-        gateSubmit.disabled = true;
         gateStatus.className = "gen-status";
         gateStatus.textContent = "Submitting to the library queue…";
         // The export always runs, whether or not the contribution lands. A name
@@ -807,7 +809,11 @@
         // the icon over it punished the user for something that has no bearing
         // on the file they asked for.
         try {
-          const submission = await submitIcon(gateContributorEl.value.trim());
+          const submission = await withBusy(
+            gateSubmit,
+            () => submitIcon(gateContributorEl.value.trim()),
+            { label: "Submitting…" }
+          );
           // Mirrored onto the generate panel so the outcome is still visible
           // after the gate closes.
           genStatus.className = "gen-status";
@@ -825,9 +831,9 @@
         runExport(act, weight);
       });
 
-      genRun.addEventListener("click", runGenerate);
+      genRun.addEventListener("click", () => withBusy(genRun, runGenerate, { label: "Generating…" }));
       genPrompt.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") runGenerate();
+        if (e.key === "Enter") withBusy(genRun, runGenerate, { label: "Generating…" });
       });
       for (const tab of genTabs) {
         tab.addEventListener("click", () => selectSource(tab.dataset.gensrc));
@@ -864,13 +870,25 @@
       // delegate from — the generator is the page. Binding to the element that
       // used to wrap it threw here, and everything defined after this line
       // (including the history dialog) never ran.
+      // What an export button says while it works, so an action that finishes in
+      // a frame still reads as having happened.
+      const GEN_BUSY_LABELS = {
+        svg: "Copying…",
+        "dl-svg": "Downloading…",
+        "dl-png": "Downloading…",
+        "dl-centerline": "Downloading…",
+      };
+
       document.addEventListener("click", (e) => {
         const act = e.target instanceof Element ? e.target.dataset.genact : undefined;
         if (!act || !genIcon) return;
         const w = genWeightSel.value;
         // Every export contributes first. Already contributed, so nothing left
         // to ask: run it straight away.
-        if (genIcon.submitted) return runExport(act, w);
+        if (genIcon.submitted) {
+          const btn = e.target.closest("[data-genact]");
+          return withBusy(btn, () => runExport(act, w), { label: GEN_BUSY_LABELS[act] });
+        }
         openGate(act, w);
       });
       document.addEventListener("keydown", (e) => {

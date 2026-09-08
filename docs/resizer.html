@@ -197,7 +197,8 @@
     </footer>
 
     <script type="module">
-      import { showToast, download } from "./lib/api.js";
+      import { showToast, download, recordUse } from "./lib/api.js";
+      import { withBusy } from "./lib/busy.js";
       import { initTheme } from "./lib/theme.js";
       import { initHeader } from "./lib/header.js";
       import { initFooter } from "./lib/footer.js";
@@ -445,7 +446,12 @@
           save.type = "button";
           save.textContent = "Save";
           save.style.marginTop = "6px";
-          save.addEventListener("click", () => download(`${source.name}-${size}.png`, blob));
+          save.addEventListener("click", () => {
+            download(`${source.name}-${size}.png`, blob);
+            // No icon name: this is the user's own file, and its name is their
+            // data. Only the site-wide resizer total moves.
+            recordUse("", "download");
+          });
           figure.append(shown, caption, save);
           resultsEl.appendChild(figure);
         }
@@ -455,10 +461,18 @@
 
       // No zip library is bundled for this: pulling one in for a handful of PNGs
       // costs every visitor the download. The browser asks once per file.
-      downloadAllEl.addEventListener("click", () => {
+      downloadAllEl.addEventListener("click", () =>
+        withBusy(downloadAllEl, saveAll, { label: "Downloading…" })
+      );
+
+      function saveAll() {
         for (const { size, blob } of rendered) download(`${source.name}-${size}.png`, blob);
+        // One count per file saved, so this row matches what the Save buttons
+        // beside it would have added — sent as a single beacon, because
+        // sendBeacon has a per-origin queue budget and drops silently past it.
+        recordUse("", "download", rendered.length);
         showToast(`Saving ${rendered.length} files`);
-      });
+      }
 
       /* --- Input ----------------------------------------------------------- */
       dropEl.addEventListener("click", () => fileEl.click());

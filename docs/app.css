@@ -177,6 +177,10 @@ footer {
 }
 footer a { color: var(--muted); }
 footer .spacer { margin-left: auto; }
+/* The set credit carries its own separator so the narrow rule can hide both at
+   once. The dot is inside the span, so it needs the row's gap added back on its
+   right; a bare space is about a third of it. */
+.foot-sources .foot-dot { margin-right: 10px; }
 
 /* --- Feature page titles ------------------------------------------------- */
 /* A page's own icon beside its heading. The same four icons the homepage cards
@@ -225,6 +229,32 @@ input[type="search"] {
 a.btn { text-decoration: none; }
 .btn:disabled { opacity: 0.55; cursor: default; }
 .btn:disabled:hover { border-color: var(--border); }
+
+/* Busy ring for a button that is waiting on a request. Drawn in currentColor so
+   it works on every button variant, and sized off the text rather than fixed so
+   it stays in proportion when the label wraps at small widths. */
+.btn-spin {
+  /* Stated, not inherited from the button: a span is display:inline by default,
+     which ignores width and height, so the ring drew nothing at all inside the
+     menu buttons (.who-item, which is not a flex container) — History and Log
+     out. `flex: none` only reaches the .btn variants. */
+  display: inline-block;
+  vertical-align: middle;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  margin-right: 7px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+/* Slowed rather than stopped: this ring is the only sign the button is working,
+   and a still circle beside a disabled button reads as broken. */
+@media (prefers-reduced-motion: reduce) {
+  .btn-spin { animation-duration: 2s; }
+}
 
 /* A control group: a label and its inputs inside one bordered box. */
 .ctl {
@@ -357,6 +387,11 @@ select option {
   .controls { gap: 8px; }
 
   footer { padding: 12px 14px; }
+  /* The footer is sticky, so every line it wraps to is viewport a phone does not
+     get back. The set credit is the one part that is also in LICENSE and the
+     README, so it is what gives way. It carries its own separator, so hiding it
+     takes the dot with it and leaves the spacer that right-aligns the rest. */
+  .foot-sources { display: none; }
 
   /* Clear of the edges, and clear of a thumb resting at the bottom. */
   #toast { left: 14px; right: 14px; bottom: 16px; transform: translateY(8px); }
