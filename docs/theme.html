@@ -268,7 +268,8 @@
         activeColor: () => color,
         // Carried so a return to this page shows the address and the palette
         // again, instead of asking that site for an answer this tab already has.
-        onSwatches: ({ site, swatches }) => writeIconTheme(site ? { site, swatches } : { swatches }),
+        onSwatches: ({ site, swatches, published }) =>
+          writeIconTheme(site ? { site, swatches, published } : { swatches, published }),
       });
 
       // Clear forgets the site and its palette too, not just the colour: leaving
