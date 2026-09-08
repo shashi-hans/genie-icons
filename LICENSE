@@ -3,54 +3,43 @@ MIT License
 Copyright (c) 2026 Shashi Hans
 
 Icon artwork is derived from the upstream sets below, each redistributed under
-its own licence. Icon names carry no source prefix, so a name does not say which
-set a drawing came from; the notices here cover the catalogue as a whole.
+its own licence. A name carries a two-letter set code only where two sets draw
+the same name, so a name does not reliably say which set a drawing came from;
+the notices here cover the catalogue as a whole, and the source.json beside each
+drawing names its set individually.
 
   Phosphor Icons, Copyright (c) 2023 Phosphor Icons
   https://github.com/phosphor-icons/core — MIT License
+
+  Tabler Icons, Copyright (c) 2020-2024 Paweł Kuna
+  https://github.com/tabler/tabler-icons — MIT License
 
   Lucide, Copyright (c) for portions of Lucide are held by Cole Bemis
   2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are
   held by Lucide Contributors 2022.
   https://github.com/lucide-icons/lucide — ISC License
 
-  Feather, Copyright (c) 2013-2023 Cole Bemis
-  https://github.com/feathericons/feather — MIT License
-
-  Tabler Icons, Copyright (c) 2020-2024 Paweł Kuna
-  https://github.com/tabler/tabler-icons — MIT License
-
-  Heroicons, Copyright (c) Tailwind Labs, Inc.
-  https://github.com/tailwindlabs/heroicons — MIT License
-
-  Iconoir, Copyright (c) 2021 Luca Burgio
-  https://github.com/iconoir-icons/iconoir — MIT License
-
-  Material Symbols (outlined, weight 400), Copyright (c) Google LLC
-  https://github.com/google/material-design-icons
-  Apache License, Version 2.0
-
   Ionicons, Copyright (c) 2015-present Ionic (http://ionic.io/)
   https://github.com/ionic-team/ionicons — MIT License
 
 Imported artwork is rescaled onto this library's 256-unit grid; the geometry is
-otherwise unmodified. Lucide, Feather, Tabler, Heroicons and Iconoir are stroked
-drawings, stored as centerline path data from which every weight is derived.
-Material Symbols and Ionicons are filled artwork with no lighter or heavier
-variant, so each ships one weight and every other weight renders that one. The
-90 `logo-*` icons are the Ionicons brand logos. LICENSES/ holds the full text of
-all eight, one file per set, including the Apache 2.0 text required for Material
-Symbols. Each is a verbatim copy of the LICENSE file in the upstream repository
-linked above.
+otherwise unmodified. Tabler and Lucide are stroked drawings, stored as
+centerline path data from which every weight is derived. Phosphor ships six
+drawn weights and is stored as filled artwork, one file per weight. Ionicons
+ships no lighter or heavier variant, so each of its icons carries one weight and
+every other weight renders that one. LICENSES/
+holds the full text of each licence above, one file per set, each a verbatim
+copy of the LICENSE file in the upstream repository linked above.
 
-The Ionicons artwork is extracted from the Ionicons TrueType font as shipped in
-@expo/vector-icons, which does not vendor Ionicons' own licence file.
-LICENSES/ionicons.txt is taken from the Ionicons repository itself rather than
-from that package.
+Ionicons contributes its outline set and the 90 `logo-*` brand logos. The logos
+were extracted from the Ionicons TrueType font as shipped in @expo/vector-icons,
+which does not vendor Ionicons' own licence file, so LICENSES/ionicons.txt is
+taken from the Ionicons repository itself rather than from that package.
 
-Brand logos reproduce third-party trademarks. Their owners' trademark rights are
-not licensed by Ionicons' MIT terms or by this licence, and use must not imply
-endorsement by or affiliation with the trademark owner.
+Brand logos reproduce third-party trademarks. The drawings are Ionicons' and
+travel under Ionicons' MIT terms; the marks they depict are not. Their owners'
+trademark rights are not licensed by those terms or by this licence, and use
+must not imply endorsement by or affiliation with the trademark owner.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
