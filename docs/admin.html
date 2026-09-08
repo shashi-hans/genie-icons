@@ -263,6 +263,7 @@
           <!-- A view, not a status filter: it replaces the queue rather than
                filtering it, so it carries its own data attribute. -->
           <button class="btn" type="button" data-view="countries" aria-selected="false">Visitors by country</button>
+          <button class="btn" type="button" data-view="uses" aria-selected="false">Icon usage</button>
         </div>
         <div id="status"></div>
         <div id="list"></div>
@@ -273,6 +274,14 @@
           <h2 class="section-heading">Visitors by country</h2>
           <p class="note" id="countries-note"></p>
           <table class="countries" id="countries"></table>
+        </section>
+
+        <!-- Also aggregates only: a count per icon name, never an export against
+             a guest id. See supabase/migrations/0005_icon_uses.sql. -->
+        <section id="uses-block" hidden>
+          <h2 class="section-heading">Icon usage</h2>
+          <p class="note" id="uses-note"></p>
+          <table class="countries" id="uses"></table>
         </section>
       </section>
     </main>
@@ -286,6 +295,7 @@
       // is what the React component will render.
       import { deriveWeightInner as weights } from "./stroke-weights.js";
       import { initFooter } from "./lib/footer.js";
+      import { withBusy } from "./lib/busy.js";
       // Same header as the other five pages. It owns identity, the theme
       // toggle and Log out, so none of those are this page's job any more.
       import { initHeader } from "./lib/header.js";
@@ -523,11 +533,14 @@
         if (act === "rename") return showConfirm(card, "rename");
         if (act === "delete") return showConfirm(card, "delete");
         if (act === "cancel") return showConfirm(card, null);
-        if (act === "rename-save") return renameContributor(id, card);
-        if (act === "delete-confirm") return deleteSubmission(id);
-        if (act === "approve") return review(id, "approved");
-        if (act === "reject") return review(id, "rejected");
-        if (act === "reopen") return review(id, "pending");
+        // The five that go to the server show the ring on the button pressed.
+        // withBusy also swallows a second click while the first is in flight,
+        // which used to double-approve when the queue was slow.
+        if (act === "rename-save") return withBusy(btn, () => renameContributor(id, card), { label: "Saving…" });
+        if (act === "delete-confirm") return withBusy(btn, () => deleteSubmission(id), { label: "Deleting…" });
+        if (act === "approve") return withBusy(btn, () => review(id, "approved"), { label: "Approving…" });
+        if (act === "reject") return withBusy(btn, () => review(id, "rejected"), { label: "Rejecting…" });
+        if (act === "reopen") return withBusy(btn, () => review(id, "pending"), { label: "Moving…" });
         const svg = centerlineSvg(row.paths) + "\n";
         if (act === "copy") {
           await navigator.clipboard.writeText(svg);
@@ -539,6 +552,16 @@
       });
 
       const countriesBlock = document.getElementById("countries-block");
+      const usesBlock = document.getElementById("uses-block");
+
+      // The queue and the two tallies answer different questions, so one is on
+      // screen at a time rather than a tally hanging below the list.
+      const VIEWS = {
+        countries: { block: countriesBlock, load: () => loadCountries() },
+        uses: { block: usesBlock, load: () => loadUses() },
+      };
+      /** "" while the queue is showing, otherwise the key in VIEWS. */
+      let view = "";
 
       /** Mark the pressed button and clear the rest, across both kinds. */
       function selectFilter(btn) {
@@ -552,43 +575,48 @@
         if (!btn) return;
         selectFilter(btn);
 
-        if (btn.dataset.view === "countries") {
-          // The queue and the tally answer different questions, so only one is
-          // on screen at a time rather than the tally hanging below the list.
+        view = btn.dataset.view ?? "";
+        for (const [key, v] of Object.entries(VIEWS)) v.block.hidden = key !== view;
+
+        if (view) {
           list.hidden = true;
           statusEl.textContent = "";
-          countriesBlock.hidden = false;
-          loadCountries();
+          withBusy(btn, VIEWS[view].load);
           return;
         }
 
-        countriesBlock.hidden = true;
         list.hidden = false;
         filter = btn.dataset.status;
-        load();
+        withBusy(btn, load);
       });
 
       gateForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         gateStatus.textContent = "Checking…";
         try {
-          await api("/api/auth/login", {
-            method: "POST",
-            body: JSON.stringify({ password: gatePassword.value }),
-          });
-          gatePassword.value = "";
-          gateStatus.textContent = "";
-          await showQueue();
+          await withBusy(
+            gateForm.querySelector('button[type="submit"], button:not([type])'),
+            async () => {
+            await api("/api/auth/login", {
+              method: "POST",
+              body: JSON.stringify({ password: gatePassword.value }),
+            });
+            gatePassword.value = "";
+            gateStatus.textContent = "";
+            await showQueue();
+            },
+            { label: "Checking…" }
+          );
         } catch (err) {
           gateStatus.textContent = err.message;
         }
       });
 
       // Refresh reloads whichever view is showing.
-      document.getElementById("refresh").addEventListener("click", () => {
-        if (countriesBlock.hidden) load();
-        else loadCountries();
-      });
+      const refreshBtn = document.getElementById("refresh");
+      refreshBtn.addEventListener("click", () =>
+        withBusy(refreshBtn, () => (view ? VIEWS[view].load() : load()), { label: "Refreshing…" })
+      );
 
       /* --- Visitors by country --------------------------------------------- */
       // ISO alpha-2 codes come back from the API; the names come from the
@@ -664,6 +692,51 @@
           // The queue is the page's job; a missing tally must not hide it.
           block.hidden = false;
           note.textContent = `Could not load the country tally: ${err.message}`;
+          table.innerHTML = "";
+        }
+      }
+
+      /* --- Icon usage ------------------------------------------------------ */
+      // Every copy and every download of an icon, counted per name. One person
+      // taking an icon as SVG and then as PNG counts twice: these are exports,
+      // not people, and not installs — the npm package is used without ever
+      // reaching this site.
+      async function loadUses() {
+        const block = document.getElementById("uses-block");
+        const table = document.getElementById("uses");
+        const note = document.getElementById("uses-note");
+        try {
+          const { icons, totals } = await api("/api/uses");
+          block.hidden = false;
+          const resizer = totals.resizerExports
+            ? ` The resizer, which works on files users supply rather than on our icons, ` +
+              `exported ${totals.resizerExports.toLocaleString()} more; no filename is stored.`
+            : "";
+          note.textContent =
+            `${icons.length.toLocaleString()} ${icons.length === 1 ? "icon" : "icons"} used, ` +
+            `${totals.copies.toLocaleString()} copies and ${totals.downloads.toLocaleString()} downloads ` +
+            `in total. Counts only — no export is stored against a visitor.` +
+            resizer;
+          if (!icons.length) {
+            table.innerHTML = "";
+            return;
+          }
+          table.innerHTML =
+            "<tr><th>Icon</th><th class='num'>Copies</th><th class='num'>Downloads</th>" +
+            "<th class='num'>Total</th><th>Last used</th></tr>" +
+            icons
+              .map(
+                (i) =>
+                  `<tr><td>${esc(i.name)}</td>` +
+                  `<td class="num">${i.copies.toLocaleString()}</td>` +
+                  `<td class="num">${i.downloads.toLocaleString()}</td>` +
+                  `<td class="num">${(i.copies + i.downloads).toLocaleString()}</td>` +
+                  `<td>${i.lastUsed ? new Date(i.lastUsed).toLocaleDateString() : "—"}</td></tr>`
+              )
+              .join("");
+        } catch (err) {
+          block.hidden = false;
+          note.textContent = `Could not load the usage tally: ${err.message}`;
           table.innerHTML = "";
         }
       }
