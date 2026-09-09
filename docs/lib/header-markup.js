@@ -62,7 +62,7 @@ export function headerBarHtml({ current = "", history = false, home = false } = 
             </button>
             <div class="who-menu" id="who-menu" role="menu" hidden>
               ${history ? '<button class="who-item" id="hist-open" type="button" role="menuitem">History</button>' : ""}
-              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Icon approval</a>
+              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Dashboard</a>
               <a class="who-item" id="login-link" href="./admin.html" role="menuitem">Admin login</a>
               <button class="who-item" id="logout-btn" type="button" role="menuitem" hidden>Log out</button>
             </div>
@@ -79,6 +79,6 @@ export const HEADER_PAGES = {
   "resizer.html": { current: "resizer" },
   "theme.html": { current: "theme" },
   // Not a tool, so no link of its own is marked; it is reached from the
-  // identity menu's "Icon approval".
+  // identity menu's "Dashboard".
   "admin.html": { current: "" },
 };

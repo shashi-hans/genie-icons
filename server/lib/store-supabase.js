@@ -663,6 +663,45 @@ export function createSupabaseStore() {
     },
 
     /**
+     * How much the generator is used: totals, distinct people, and the names
+     * generated most.
+     *
+     * One RPC, because the interesting figure is a count of distinct guest ids
+     * and counting those over PostgREST would mean fetching them. The function
+     * aggregates in the database and returns numbers, so no guest id crosses
+     * this boundary — see supabase/migrations/0006_generate_usage.sql.
+     */
+    async listGenerateUsage(limit = 20) {
+      const capped = Math.min(Math.max(Number(limit) || 20, 1), 200);
+      let rows;
+      try {
+        rows = await sb("POST", "/rpc/generate_usage_stats", { body: { top_limit: capped } });
+      } catch (err) {
+        // The function arrives with 0006. Zeroes read as "nothing generated
+        // yet", which is what the panel shows before the first generation.
+        if (err?.status !== 404) throw err;
+        return { generations: 0, users: 0, names: 0, last7Days: 0, contributed: 0, newest: null, top: [] };
+      }
+      // A scalar-returning function answers with the value itself, and PostgREST
+      // wraps it in an array for some client/Accept combinations.
+      const stats = (Array.isArray(rows) ? rows[0] : rows) ?? {};
+      return {
+        generations: Number(stats.generations ?? 0),
+        users: Number(stats.users ?? 0),
+        names: Number(stats.names ?? 0),
+        last7Days: Number(stats.last7Days ?? 0),
+        contributed: Number(stats.contributed ?? 0),
+        newest: iso(stats.newest),
+        top: (stats.top ?? []).map((r) => ({
+          name: r.name,
+          generations: Number(r.generations ?? 0),
+          users: Number(r.users ?? 0),
+          lastGenerated: iso(r.last_generated),
+        })),
+      };
+    },
+
+    /**
      * The busiest icons first, with the site-wide totals beside them. Aggregates
      * only — no row anywhere links an export to a guest id.
      */

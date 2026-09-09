@@ -74,6 +74,7 @@
  * @property {() => Promise<{country: string, views: number, visitors: number, lastSeen: string|null}[]>} listVisitorCountries
  * @property {(name: string, action: "copy"|"download", count?: number) => Promise<void>} recordIconUse  empty name = the resizer
  * @property {(limit?: number) => Promise<{icons: {name: string, copies: number, downloads: number, lastUsed: string|null}[], totals: {copies: number, downloads: number, resizerExports: number}}>} listIconUses
+ * @property {(limit?: number) => Promise<{generations: number, users: number, names: number, last7Days: number, contributed: number, newest: string|null, top: {name: string, generations: number, users: number, lastGenerated: string|null}[]}>} listGenerateUsage  aggregates only; no guest id crosses this
  */
 
 import { createSupabaseStore } from "./store-supabase.js";
