@@ -17,6 +17,7 @@ const ROUTES = {
   "POST /submissions": () => import("./routes/submissions.js"),
   "POST /theme": () => import("./routes/theme.js"),
   "GET /uses": () => import("./routes/uses.js"),
+  "GET /generate-usage": () => import("./routes/generate-usage.js"),
   "POST /uses": () => import("./routes/uses.js"),
   "GET /visits/countries": () => import("./routes/visit-countries.js"),
   // Exact routes are matched before the patterns below, so this is not shadowed
