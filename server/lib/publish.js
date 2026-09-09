@@ -119,7 +119,7 @@ async function gh(method, apiPath, body) {
  * kebab-cased name, holding path data the server already validated.
  */
 async function publishToGitHub(name, paths, contributor) {
-  const repo = process.env.GH_REPO || "shashi-hans/icon-genie";
+  const repo = process.env.GH_REPO || "shashi-hans/genie-icons";
   const base = process.env.GH_BASE || "main";
   const rel = iconFilePath(name);
   const content = Buffer.from(toCenterlineSvg(paths), "utf8").toString("base64");
