@@ -9,6 +9,7 @@
 // this adds no request. It stays hidden when there is no backend, rather than
 // rendering "0 visitors" and looking broken.
 import { loadMe } from "./header.js";
+import { initAnalytics } from "./analytics.js";
 
 const CREATOR = "Shashi";
 const CREATOR_URL = "https://github.com/shashi-hans";
@@ -25,6 +26,10 @@ const SOURCES = ["Tabler", "Phosphor", "Lucide", "Ionicons"];
 
 /** Fill every [data-site-footer-bar] on the page. */
 export async function initFooter() {
+  // Before the early return below, so a page with no footer bar is still
+  // measured.
+  initAnalytics();
+
   const bars = document.querySelectorAll("[data-site-footer-bar]");
   if (!bars.length) return;
 

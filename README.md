@@ -163,6 +163,33 @@ Two limits worth knowing before this carries real traffic:
 
 **Response headers** are set in [vercel.json](vercel.json): `nosniff`, `strict-origin-when-cross-origin`, `x-frame-options: DENY`, and a CSP that pins `default-src` to `'self'` with `object-src`/`base-uri`/`frame-ancestors` at `'none'`. `connect-src` allows any `https:` origin because bring-your-own-key generation posts from the page to whichever provider the user names. The CSP carries `script-src 'unsafe-inline'`, which is most of what a CSP is for: both pages keep their script in an inline `<script type="module">`, and the directive cannot be tightened until that moves to a file. What it does buy is the plugin, base-tag, and framing directives, and a `connect-src` that stops an injected script from posting anywhere but over https. Moving the two inline scripts out and dropping `'unsafe-inline'` is the change that makes it real.
 
+### Google Analytics
+
+Set `MEASUREMENT_ID` in [`docs/lib/analytics.js`](docs/lib/analytics.js) to the
+GA4 property's `G-XXXXXXXXXX`. Empty means the module is inert — no script, no
+cookie, no request — which is how it ships.
+
+**It loads without asking for consent.** That is a decision taken deliberately,
+not an oversight. The DPDP Act 2023 requires consent to process personal data
+and has no legitimate-interest fallback of the kind GDPR provides, and GA sends
+the visitor's IP and a client identifier to Google. So this is a risk accepted by
+whoever owns the privacy notice, and that notice has to name Google as a
+processor. Adding a gate later is a small change: hold the `load()` call until
+the visitor agrees.
+
+Ad storage stays denied, `anonymize_ip` is on, and Google Signals and ad
+personalisation are off, so this is measurement rather than advertising. Those
+settings reduce what is shared; they are not a substitute for consent.
+
+It is here for what the site's own counters cannot answer — sessions,
+engagement, referrers, and the generator funnel, which is marked with
+`icon_generated`, `icon_copied`, `icon_downloaded` and `icon_contributed`. Event
+parameters carry icon names and never the prompt someone typed.
+
+The counters below stay the source of truth for visitors, views, per-icon copies
+and downloads, and generator usage. They key on the guest cookie, read no IP,
+stay in ap-south-1, and are unaffected by turning GA off.
+
 ### Visitor count
 
 The header shows unique visitors, with page views in its tooltip. Uniqueness is judged by the **guest cookie that already exists for history** — no IP is read or stored, which keeps the counter clear of DPDP obligations and costs nothing in accuracy that matters here.
