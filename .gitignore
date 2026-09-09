@@ -22,3 +22,14 @@ src/icons/
 src/index.ts
 docs/icons.json
 docs/genie-bundle.js
+
+# The import's two working trees, neither of them source.
+#
+# .icon-sources/ holds shallow clones of the upstream icon repos, made by
+# `npm run fetch:sources` and read only while importing. It was untracked rather
+# than ignored, which left 1.9 GB that `git add -A` would have offered to commit.
+# raw-svgs-incoming/ is where an import stages artwork before merge-sources.js
+# moves it into raw-svgs/; it is meant to be compared against raw-svgs/ and then
+# discarded. Deleting either costs a re-fetch, never source.
+.icon-sources/
+raw-svgs-incoming/
