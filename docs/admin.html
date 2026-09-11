@@ -382,7 +382,7 @@
                 <dt>Paths</dt><dd>${row.paths.length}</dd>
                 <dt>Source</dt><dd>${esc(row.source)}</dd>
                 <dt>Submitted</dt><dd>${new Date(row.createdAt).toLocaleString()}</dd>
-                <dt>Submitter</dt><dd><code>${esc(row.guestId).slice(0, 12)}…</code></dd>
+                <dt>Submitter</dt><dd><code>${esc(String(row.guestId ?? "").slice(0, 12))}…</code></dd>
                 ${row.reviewedAt ? `<dt>Reviewed</dt><dd>${new Date(row.reviewedAt).toLocaleString()}</dd>` : ""}
                 <dt>Add as</dt><dd><code>${file}</code></dd>
               </dl>
@@ -804,12 +804,11 @@
           /* older browser: fall back to the raw code */
         }
         return (code) => {
-          // ZZ is the ISO code for "no country reported". Every row currently under
-        // it is local test traffic, so it is labelled as such — but the code also
-        // covers a real visit that arrives with no CDN header, which this name
-        // would then describe wrongly. Clear the row and rename this back if the
-        // app is ever served without a CDN in front of it.
-        if (code === "ZZ") return "ClaudeTest";
+          // ZZ is the ISO code for "no country reported": a visit that reached
+          // the app with no CDN country header, which covers local development
+          // and a deploy with nothing in front of it. Named for what it is,
+          // because Intl.DisplayNames has no entry for it.
+          if (code === "ZZ") return "Unknown";
           try {
             return names?.of(code) || code;
           } catch {
@@ -847,7 +846,7 @@
             // visit that arrived with no CDN country header, which is every
             // visit in local development.
             note.textContent +=
-              ` "ClaudeTest" (${unknown.views.toLocaleString()} views) is traffic that reached the app` +
+              ` "Unknown" (${unknown.views.toLocaleString()} views) is traffic that reached the app` +
               ` without a country header — local development, or a deploy with no CDN in front of it.`;
           }
           table.innerHTML =
