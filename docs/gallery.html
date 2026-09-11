@@ -78,7 +78,7 @@
 
       /* Same body width as the resizer and the generator, so the three tools
          line up rather than this one running edge to edge. */
-      main { width: min(1100px, 100%); margin: 0 auto; padding: 28px clamp(14px, 4vw, 20px) 48px; }
+      main { width: min(1200px, 100%); margin: 0 auto; padding: 28px clamp(14px, 4vw, 20px) 48px; }
       /* The heading for whatever the grid is currently showing, with the count
          that used to sit in the controls row. */
       .section-bar {
@@ -309,7 +309,7 @@
          aligned on one row, so the badge lines up with the buttons beside it. */
       .who-badge strong { color: var(--fg); font-weight: 600; margin-left: 4px; }
       .who-badge.admin strong { color: var(--accent); }
-      .who-badge .caret { color: var(--muted); font-size: 10px; }
+      .who-badge .caret { color: var(--muted); font-size: 12px; }
       .who-badge[aria-expanded="true"] { border-color: var(--accent); }
 
       .who-badge.admin { border-color: var(--accent); color: var(--accent); }
@@ -344,7 +344,7 @@
       .cell.contributed:hover { border-color: #3fb950; }
       .cell-tag {
         position: absolute; top: 6px; right: 6px;
-        font-size: 9px; letter-spacing: 0.03em; text-transform: uppercase;
+        font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase;
         color: #3fb950; border: 1px solid #2d6a4f; border-radius: 999px; padding: 1px 5px;
       }
       .gen-steps { color: var(--muted); font-size: 12px; margin: 0 0 8px; padding-left: 18px; line-height: 1.55; }
@@ -385,7 +385,7 @@
             </button>
             <div class="who-menu" id="who-menu" role="menu" hidden>
               <button class="who-item" id="hist-open" type="button" role="menuitem">History</button>
-              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Icon approval</a>
+              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Dashboard</a>
               <a class="who-item" id="login-link" href="./admin.html" role="menuitem">Admin login</a>
               <button class="who-item" id="logout-btn" type="button" role="menuitem" hidden>Log out</button>
             </div>
@@ -401,7 +401,7 @@
         <div class="sub">Click any icon to customize, copy a snippet, or download.</div>
       </div>
       <div class="controls">
-        <input id="search" type="search" placeholder="Search icon from list of 9028 icons ..." autocomplete="off" />
+        <input id="search" type="search" placeholder="Search icon from list of 9,031 icons ..." autocomplete="off" />
         <button class="btn" id="search-go" type="button">Search</button>
         <span class="ctl">
           <label for="weight">weight</label>
@@ -857,15 +857,15 @@
        * The default view: the 40 popular icons, in the order POPULAR lists them.
        *
        * They are spread through the catalogue alphabetically, so one paged
-       * request cannot return them. This asks for all of them by fetching the
-       * full summary list once and picking, which is a single request the server
-       * already serves for the weight selector.
+       * request cannot return them. /api/icons?names= answers with exactly the
+       * icons named, in the order asked for, so the whole set arrives in one
+       * request.
        */
       /* --- Popular-set cache ------------------------------------------------ */
-      // The popular set costs one request per name to assemble, because /api/icons pages
-      // alphabetically and these names are scattered through the catalogue. It is
-      // also the first thing every visitor sees. So it is stored once and read
-      // from storage on every later landing, with no request at all.
+      // The popular set is the first thing every visitor sees, and assembling it
+      // costs a request that carries every weight's markup for 40 icons. So it is
+      // stored once and read from storage on every later landing, with no request
+      // at all.
       //
       // What is stored is the drawing itself, about 78KB of path data — well
       // inside the ~5MB a browser allows, but large enough to be worth the
@@ -881,7 +881,9 @@
       // drew an icon. 3 renames the stored name list to `askedFor`, because the
       // set stored can be shorter than the set asked for once a name is hidden.
       // An older entry lacks the field and is dropped rather than misread.
-      const SET_VERSION = 3;
+      // 4 drops entries built before /api/icons?names=, which are short by
+      // whichever names a substring search could not reach on one page.
+      const SET_VERSION = 4;
       const CACHE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
       /** The stored set, or null when absent, stale, corrupt or for another list. */
@@ -986,25 +988,26 @@
           // not reachable in a slice. They resolve in parallel and keep POPULAR's
           // order, and a name that ever stops existing is skipped rather than
           // rendering a hole.
-          // A name that answers but holds no match is absent from the catalogue,
-          // which is a permanent fact: it was hidden by an admin, or renamed. A
-          // name whose request threw is unknown, and that difference decides
-          // whether the result is worth storing. Collapsing both into null meant
-          // one admin-hidden icon in POPULAR stopped the set caching forever.
-          const found = await Promise.all(
-            POPULAR.map((name) =>
-              api(`/api/icons?q=${encodeURIComponent(name)}&limit=400`)
-                .then((r) => ({ icon: (r.icons || []).find((i) => i.name === name) || null }))
-                .catch(() => ({ failed: true }))
-            )
-          );
+          // One request for the whole set. /api/icons?names= returns exactly the
+          // icons named, in the order asked for, so the 40 arrive together
+          // instead of as 40 searches that each pulled a 400-icon page.
+          //
+          // A name the catalogue no longer has is skipped by the server rather
+          // than returned as a hole, so a renamed or removed icon shortens the
+          // set instead of breaking it.
+          //
+          // Not caught here: a failure belongs to the handler below, which says
+          // so on screen. Swallowing it painted an empty grid under "Popular
+          // Icons" with nothing to explain it.
+          const set = await api(`/api/icons?names=${encodeURIComponent(POPULAR.join(","))}`);
           if (ticket !== pageRequest) return;
-          const list = found.map((r) => r.icon).filter(Boolean);
+          const list = set.icons || [];
+          if (set.sets) setNames = set.sets;
+          catalogueTotal = set.catalogueTotal ?? catalogueTotal;
           showPopular(list, catalogueTotal);
-          // Stored when every name was actually asked and answered. A partial
-          // set from a failed request would otherwise be served back as though
-          // it were the whole thing.
-          if (!found.some((r) => r.failed) && list.length) {
+          // Only a set that actually arrived is stored, so a short answer is
+          // never served back as though it were the whole thing.
+          if (list.length) {
             writePopularCache(list, catalogueTotal, setNames);
           }
         } catch (err) {

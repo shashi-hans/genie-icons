@@ -25,6 +25,11 @@ const DEFAULT_LIMIT = 120;
 // asking for the whole catalogue again.
 const MAX_LIMIT = 400;
 const MAX_QUERY_CHARS = 60;
+// A `names` request answers with exactly the icons asked for. Bounded because
+// it bypasses paging: the caller names what it wants, so the response is as
+// large as the list, and 100 is well beyond the 40 the gallery's popular set
+// needs.
+const MAX_NAMES = 100;
 
 function intParam(value, fallback, min, max) {
   const n = Number.parseInt(Array.isArray(value) ? value[0] : value, 10);
@@ -64,6 +69,36 @@ async function page(req, res) {
   const limit = intParam(query.limit, DEFAULT_LIMIT, 1, MAX_LIMIT);
 
   const all = await getStore().listIcons();
+
+  // Exact names, in the order asked for.
+  //
+  // The gallery's popular set is 40 names scattered through a 9,000-icon
+  // catalogue, so no page contains them. It used to ask for each one separately
+  // and search for it: 40 requests, 8.8 MB, and the catalogue rebuilt 40 times.
+  // Worse, a substring search could not always find the name it was searching
+  // for — "x" is match 578 of 594, past any page — so the set silently came back
+  // one short.
+  //
+  // A missing name is skipped rather than left as a hole, which is what lets a
+  // renamed or removed icon drop out of the popular set without breaking it.
+  const namesParam = String(Array.isArray(query.names) ? query.names[0] : (query.names ?? "")).trim();
+  if (namesParam) {
+    const wanted = namesParam.split(",").map((n) => n.trim()).filter(Boolean).slice(0, MAX_NAMES);
+    const byName = new Map(all.map((icon) => [icon.name, icon]));
+    const icons = wanted.map((n) => byName.get(n)).filter(Boolean);
+    return json(res, 200, {
+      icons,
+      weights: WEIGHTS,
+      sets: readSetNames(),
+      total: icons.length,
+      catalogueTotal: all.length,
+      offset: 0,
+      limit: icons.length,
+      q: "",
+      detail: "all",
+    });
+  }
+
   const matched = search(all, q);
 
   // Clamped to the start of the last full page so an offset past the end returns

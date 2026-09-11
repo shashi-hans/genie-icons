@@ -41,11 +41,19 @@
          three rows of `auto`, with main centring whatever height they come to.
          dvh rather than vh: on mobile the toolbar collapses as you scroll and vh
          measures the taller state, overflowing by its height. */
-      html, body { height: 100dvh; }
-      body { overflow: hidden; }
+      html { height: 100%; }
+      /* The hero fills the first screen and the page scrolls past it. It used to
+         be locked to exactly one screen (height: 100dvh; overflow: hidden), which
+         clipped anything below the fold — the sectioned footer could not be
+         reached at all. dvh rather than vh: on mobile the toolbar collapses as
+         you scroll and vh measures the taller state. */
+      body { min-height: 100dvh; }
+      main { min-height: calc(100dvh - 160px); }
       header, footer { position: static; }
       header { padding: clamp(8px, 1.4vh, 15px) 20px; }
-      footer { padding: clamp(6px, 1vh, 11px) 20px; }
+      /* No footer padding of its own: the tight one-line rule here was written
+         for the old sticky bar and squashed the sectioned footer that replaced
+         it. app.css sizes it the same as every other page. */
 
       main {
         display: flex;
@@ -65,7 +73,7 @@
            the horizontal one separates the three tool cards. */
         row-gap: clamp(11px, 1.8vh, 24px);
         column-gap: clamp(22px, 3.4vw, 56px);
-        max-width: 1420px;
+        max-width: 1200px;
         width: 100%;
         margin: 0 auto;
       }
@@ -181,7 +189,7 @@
         /* Claims the free space so the tag sits at the right-hand end of the title
            row. The arrow then follows it instead of taking that space itself. */
         margin-left: auto;
-        font-size: clamp(9px, 1.05vh, 11px);
+        font-size: 12px;
         font-weight: 600;
         line-height: 1;
         padding: 3px 7px;
@@ -222,7 +230,7 @@
       }
       .tile-svg { width: 55%; height: 55%; }
       .tool h3 { margin: 0; font-size: clamp(14px, 1.6vh, 16px); color: var(--accent); }
-      .tool p { margin: 0; color: var(--muted); font-size: clamp(10px, 1.25vh, 14px); line-height: 1.5; }
+      .tool p { margin: 0; color: var(--muted); font-size: clamp(12px, 1.25vh, 14px); line-height: 1.5; }
 
       /* --- Reasons + install (row 3) ----------------------------------------- */
       /* Stacked rather than side by side, so "Use it in your project" reads as
@@ -241,7 +249,7 @@
       .install-code { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; align-items: start; }
       .block-title {
         margin: 0 0 clamp(3px, 0.5vh, 6px);
-        font-size: clamp(12px, 1.5vh, 14px);
+        font-size: 14px;
         color: var(--accent); font-weight: 600;
         letter-spacing: 0;
       }
@@ -257,7 +265,7 @@
       }
       .reason .badge svg { width: 55%; height: 55%; }
       .reason b { display: block; font-size: clamp(12px, 1.35vh, 14px); }
-      .reason span { color: var(--muted); font-size: clamp(10px, 1.15vh, 12px); line-height: 1.45; }
+      .reason span { color: var(--muted); font-size: 12px; line-height: 1.45; }
 
       .install pre {
         margin: 0;
@@ -266,12 +274,14 @@
         border-radius: 10px;
         padding: clamp(5px, 0.7vh, 8px) 12px;
         overflow-x: auto;
-        font: clamp(10px, 1.2vh, 12px)/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+        font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
       }
-      .install .note { margin: 0; color: var(--muted); font-size: clamp(10px, 1.1vh, 12px); }
+      .install .note { margin: 0; color: var(--muted); font-size: 12px; }
 
       /* --- Footer ------------------------------------------------------------ */
-      .foot-bottom { max-width: 1420px; }
+      /* Nothing of its own. app.css sizes and caps the footer the same on every
+         page; the width and padding overrides that used to live here were written
+         for the old one-line sticky bar and fought the sectioned footer. */
 
       /* --- Gutter rails ------------------------------------------------------ */
       /* The margins of a wide screen, filled with the library itself. Purely
@@ -309,13 +319,18 @@
       /* Separated from the reasons by a rule: these are what the library is, the
          reasons are what it does. */
       .panel-stats {
-        display: flex; justify-content: space-between; align-items: baseline;
-        flex-wrap: wrap; gap: 8px clamp(12px, 2vw, 30px);
+        /* The same grid as .reasons below, so each figure starts at the same x
+           as the reason under it. space-between spread them to the full width
+           instead, which left every column but the first out of line. */
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        align-items: baseline;
+        gap: 8px 18px;
         padding-bottom: clamp(6px, 0.9vh, 11px);
         margin-bottom: clamp(6px, 0.9vh, 11px);
         border-bottom: 1px solid var(--border);
       }
-      .stat { color: var(--muted); font-size: clamp(10px, 1.15vh, 12px); }
+      .stat { color: var(--muted); font-size: 12px; }
       .stat b { color: var(--fg); font-size: clamp(14px, 1.7vh, 17px); letter-spacing: -0.01em; margin-right: 5px; }
 
       /* Short screens drop the least load-bearing text first, rather than
@@ -336,19 +351,18 @@
         html, body { height: auto; }
         body { overflow: auto; }
         .bento > * { grid-column: span 12 !important; }
-        .install-code, .reasons { grid-template-columns: 1fr; }
+        .install-code, .reasons, .panel-stats { grid-template-columns: 1fr; }
         .chip { display: flex !important; }
         .tool p, .reason span, .install .note { display: block; }
         .tool { margin-top: 0; }
       }
 
       /* Phone. The bento has already stacked at 900px; this is the chrome around
-         it. It repeats what app.css sets at the same width because this page
-         overrides header and footer padding, and a page's own style block is
-         read after the shared sheet. */
+         it. It repeats what app.css sets at the same width for the header,
+         because this page overrides header padding and a page's own style block
+         is read after the shared sheet. The footer is app.css's alone. */
       @media (max-width: 640px) {
         header { position: static; padding: 12px 14px; }
-        footer { padding: 10px 14px; }
         main { padding: 14px; }
         /* Four stacked cards, each with room above it, is a long scroll before
            the first line of prose. */
@@ -379,7 +393,7 @@
             </button>
             <div class="who-menu" id="who-menu" role="menu" hidden>
               
-              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Icon approval</a>
+              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Dashboard</a>
               <a class="who-item" id="login-link" href="./admin.html" role="menuitem">Admin login</a>
               <button class="who-item" id="logout-btn" type="button" role="menuitem" hidden>Log out</button>
             </div>
@@ -472,7 +486,7 @@
         <div class="panel bare reasons-panel">
           <h3 class="block-title">Why Choose Genie Icons ?</h3>
           <div class="panel-stats">
-            <span class="stat"><b id="stat-icons" data-icon-count>9,028</b>icons</span>
+            <span class="stat"><b id="stat-icons" data-icon-count>9,031</b>icons</span>
             <span class="stat"><b>5</b>weights each</span>
             <span class="stat"><b>4</b>upstream sets</span>
             <span class="stat"><b>90</b>brand logos</span>
@@ -516,7 +530,7 @@
     </main>
 
     <footer>
-      <div class="footer-inner foot-bottom" data-site-footer-bar></div>
+      <div class="footer-inner" data-site-footer-bar></div>
     </footer>
 
     <script type="module">

@@ -54,7 +54,7 @@ const USER_AGENT =
 // robots.txt is requested under the tool's real name. The file is public and
 // serving it is never gated, so nothing needs disguising to read it, and an
 // operator reading their logs can see what actually asked.
-const ROBOTS_USER_AGENT = "icon-genie-theme/1.0 (+https://github.com/shashi-hans/icon-genie)";
+const ROBOTS_USER_AGENT = "icon-genie-theme/1.0 (+https://github.com/shashi-hans/genie-icons)";
 
 /** True for an address no caller has any business reaching through this server. */
 function isBlockedAddress(ip) {

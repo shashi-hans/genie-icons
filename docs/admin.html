@@ -8,7 +8,7 @@
       type="image/svg+xml"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%2315803d' viewBox='0 0 256 256'><path d='M48 64a8 8 0 0 1 8-8h16V40a8 8 0 0 1 16 0v16h16a8 8 0 0 1 0 16H88v16a8 8 0 0 1-16 0V72H56a8 8 0 0 1-8-8m136 128h-8v-8a8 8 0 0 0-16 0v8h-8a8 8 0 0 0 0 16h8v8a8 8 0 0 0 16 0v-8h8a8 8 0 0 0 0-16m56-48h-16v-16a8 8 0 0 0-16 0v16h-16a8 8 0 0 0 0 16h16v16a8 8 0 0 0 16 0v-16h16a8 8 0 0 0 0-16m-20.69-64L80 219.31a16 16 0 0 1-22.62 0l-20.7-20.68a16 16 0 0 1 0-22.63L176 36.69a16 16 0 0 1 22.63 0l20.68 20.68a16 16 0 0 1 0 22.63m-54.63 32L144 91.31l-96 96L68.68 208ZM208 68.69 187.31 48l-32 32L176 100.69Z'/></svg>"
     />
-    <title>Icon Review — Admin</title>
+    <title>Dashboard — Admin</title>
     <script>
       // Set the theme before the first paint.
       //
@@ -62,7 +62,22 @@
       .btn[aria-selected="true"] { border-color: var(--accent); color: var(--accent); }
       .btn.ok:hover { border-color: var(--ok); color: var(--ok); }
       .btn.bad:hover { border-color: var(--bad); color: var(--bad); }
-      main { padding: 20px clamp(14px, 4vw, 20px); width: min(1100px, 100%); margin: 0 auto; }
+      main { padding: 20px clamp(14px, 4vw, 20px); width: min(1200px, 100%); margin: 0 auto; }
+      /* The section row. Heavier than the filter row under it and separated by
+         a rule, so the two levels do not read as one long row of chips. */
+      .dash-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .dash-tabs .btn { font-weight: 600; }
+      .dash-tabs .btn[aria-selected="true"] {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
       .filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
       .note { color: var(--muted); }
       .card {
@@ -84,7 +99,7 @@
         background: var(--bg);
       }
       .previews svg { width: 36px; height: 36px; color: var(--fg); }
-      .previews figcaption { font-size: 10px; color: var(--muted); margin-top: 3px; }
+      .previews figcaption { font-size: 12px; color: var(--muted); margin-top: 3px; }
       .meta { min-width: 0; }
       .meta h2 { margin: 0 0 4px; font-size: 16px; }
       dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 8px 0 12px; font-size: 14px; }
@@ -151,23 +166,10 @@
       table.countries tr:last-child td { border-bottom: 0; }
       .flag { margin-right: 8px; }
 
-      footer {
-        /* Sticky as well as pushed down, matching the other pages: it stays on
-           screen while a long review queue scrolls under it. */
-        position: sticky;
-        bottom: 0;
-        background: var(--bg);
-        border-top: 1px solid var(--border);
-        padding: 12px 20px; margin-top: 28px;
-        font-size: 12px; color: var(--muted);
-      }
-      .footer-inner {
-        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-        max-width: 1000px; margin: 0 auto;
-      }
-      .footer-inner .spacer { margin-left: auto; }
-      footer a { color: var(--muted); }
-      .foot-dot { color: var(--border); }
+      /* The footer is app.css's now. This page used to restate it as a sticky
+         one-line bar, and that flex rule on .footer-inner collapsed the shared
+         footer's column grid to a single 320px column. */
+      footer { margin-top: 28px; }
 
       .gate { max-width: 420px; margin: 60px auto; text-align: center; }
       .gate input {
@@ -184,15 +186,12 @@
       /* --- Narrow screens ---------------------------------------------- */
       @media (max-width: 640px) {
         /* The preview column and the submission's details stop fitting side by
-           side: the previews are four fixed cells, so the details column takes
+           side: the previews are five fixed cells, so the details column takes
            whatever is left, which is not enough to read a prompt in. */
         .card { grid-template-columns: 1fr; gap: 12px; }
         /* Labels above values rather than beside them, for the same reason. */
         dl { grid-template-columns: 1fr; gap: 0 0; }
         dl dt { margin-top: 6px; }
-        /* Not sticky, matching the header: a wrapped footer and a wrapped bar
-           together leave little of a phone screen for the queue itself. */
-        footer { position: static; padding: 12px 14px; }
         /* The bar bleeds to the page edges by cancelling main's side padding,
            so it has to cancel the value main actually has, not a guess at it. */
         .page-bar {
@@ -223,7 +222,7 @@
             </button>
             <div class="who-menu" id="who-menu" role="menu" hidden>
               
-              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Icon approval</a>
+              <a class="who-item" id="admin-link" href="./admin.html" role="menuitem" hidden>Dashboard</a>
               <a class="who-item" id="login-link" href="./admin.html" role="menuitem">Admin login</a>
               <button class="who-item" id="logout-btn" type="button" role="menuitem" hidden>Log out</button>
             </div>
@@ -237,7 +236,7 @@
            brand, the tool links, the theme toggle, and the identity menu with Log
            out in it. Only the title and the one control nothing else has. -->
       <div class="page-bar">
-        <h1>Icon review</h1>
+        <h1>Dashboard</h1>
         <span class="grow"></span>
         <button class="btn" id="refresh" type="button">Refresh</button>
       </div>
@@ -246,7 +245,7 @@
            is presentation, never protection. -->
       <section class="gate" id="gate" hidden>
         <h2>Admin login</h2>
-        <p class="note">This page lists icons people submitted, so it needs an admin session.</p>
+        <p class="note">Icon review, visitor counts and usage. All of it needs an admin session.</p>
         <form id="gate-form">
           <input id="gate-password" type="password" placeholder="Admin password" autocomplete="current-password" />
           <button class="btn" type="submit">Log in</button>
@@ -255,18 +254,40 @@
       </section>
 
       <section id="queue" hidden>
-        <div class="filters" id="filters">
+        <!-- Two levels. The top row picks what the page is about; the row under
+             it belongs to whichever section is showing and is absent for the two
+             that have nothing to narrow. Keeping them separate is what stops a
+             status filter and a whole different view sharing one row, which is
+             how "Visitors by country" ended up looking like a fifth status. -->
+        <nav class="dash-tabs" id="dash-tabs" aria-label="Dashboard sections">
+          <button class="btn" type="button" data-tab="review" aria-selected="true">Icon review</button>
+          <button class="btn" type="button" data-tab="visitors" aria-selected="false">Visitors</button>
+          <button class="btn" type="button" data-tab="uses" aria-selected="false">Icon usage</button>
+          <button class="btn" type="button" data-tab="generate" aria-selected="false">Generator usage</button>
+        </nav>
+
+        <div class="filters" id="filters" data-subtabs="review">
           <button class="btn" type="button" data-status="pending" aria-selected="true">Pending</button>
           <button class="btn" type="button" data-status="approved" aria-selected="false">Approved</button>
           <button class="btn" type="button" data-status="rejected" aria-selected="false">Rejected</button>
           <button class="btn" type="button" data-status="" aria-selected="false">All</button>
-          <!-- A view, not a status filter: it replaces the queue rather than
-               filtering it, so it carries its own data attribute. -->
-          <button class="btn" type="button" data-view="countries" aria-selected="false">Visitors by country</button>
-          <button class="btn" type="button" data-view="uses" aria-selected="false">Icon usage</button>
         </div>
+
+        <div class="filters" id="visitor-subtabs" data-subtabs="visitors" hidden>
+          <button class="btn" type="button" data-visitors="totals" aria-selected="true">Total visitors</button>
+          <button class="btn" type="button" data-visitors="countries" aria-selected="false">By country</button>
+        </div>
+
         <div id="status"></div>
         <div id="list"></div>
+
+        <!-- Two counters and nothing else. Uniqueness comes from the guest
+             cookie the history already needs, so no IP is read or stored. -->
+        <section id="visitors-block" hidden>
+          <h2 class="section-heading">Total visitors</h2>
+          <p class="note" id="visitors-note"></p>
+          <table class="countries" id="visitors"></table>
+        </section>
 
         <!-- Aggregates only: a country tally, never a country against a guest
              id. See supabase/migrations/0004_visit_countries.sql. -->
@@ -282,6 +303,14 @@
           <h2 class="section-heading">Icon usage</h2>
           <p class="note" id="uses-note"></p>
           <table class="countries" id="uses"></table>
+        </section>
+
+        <!-- Counted in the database and returned as numbers, so no guest id
+             reaches this page. See supabase/migrations/0006_generate_usage.sql. -->
+        <section id="generate-block" hidden>
+          <h2 class="section-heading">Generator usage</h2>
+          <p class="note" id="generate-note"></p>
+          <table class="countries" id="generate"></table>
         </section>
       </section>
     </main>
@@ -308,7 +337,6 @@
       const list = document.getElementById("list");
       const statusEl = document.getElementById("status");
       const filters = document.getElementById("filters");
-      let filter = "pending";
 
       // Escape before interpolating anything a submitter controls. The name and
       // prompt arrive from an open endpoint, so they are untrusted text; path data
@@ -332,7 +360,7 @@
 
       function cardHtml(row) {
         const w = weights(row.paths);
-        const previews = ["thin", "regular", "fill", "duotone"]
+        const previews = ["thin", "regular", "bold", "fill", "duotone"]
           .map(
             (name) =>
               `<figure><div class="cell"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${w[name]}</svg></div><figcaption>${name}</figcaption></figure>`
@@ -354,7 +382,7 @@
                 <dt>Paths</dt><dd>${row.paths.length}</dd>
                 <dt>Source</dt><dd>${esc(row.source)}</dd>
                 <dt>Submitted</dt><dd>${new Date(row.createdAt).toLocaleString()}</dd>
-                <dt>Submitter</dt><dd><code>${esc(row.guestId).slice(0, 12)}…</code></dd>
+                <dt>Submitter</dt><dd><code>${esc(String(row.guestId ?? "").slice(0, 12))}…</code></dd>
                 ${row.reviewedAt ? `<dt>Reviewed</dt><dd>${new Date(row.reviewedAt).toLocaleString()}</dd>` : ""}
                 <dt>Add as</dt><dd><code>${file}</code></dd>
               </dl>
@@ -401,17 +429,18 @@
 
       let rows = [];
 
-      async function load() {
+      /** One page of the review queue. `status` is "" for all of them. */
+      async function load(status = chosen.review) {
         statusEl.className = "";
         statusEl.textContent = "Loading…";
         try {
-          const query = filter ? `?status=${encodeURIComponent(filter)}` : "";
+          const query = status ? `?status=${encodeURIComponent(status)}` : "";
           const data = await api(`/api/submissions${query}`);
           rows = data.submissions;
           const c = data.counts;
           statusEl.textContent = rows.length
             ? `${rows.length} shown · ${c.pending} pending, ${c.approved} approved, ${c.rejected} rejected`
-            : `Nothing ${filter || "here"} yet. ${c.pending} pending overall.`;
+            : `Nothing ${status || "here"} yet. ${c.pending} pending overall.`;
           list.innerHTML = rows.map(cardHtml).join("");
         } catch (err) {
           if (/admin session/i.test(err.message)) return showGate();
@@ -429,7 +458,10 @@
       async function showQueue() {
         gate.hidden = true;
         queue.hidden = false;
-        await load();
+        // Through showSection so the panels, the sub-tab row and the selected
+        // tab all start consistent with each other, rather than the markup's
+        // defaults happening to agree with it.
+        await showSection(section);
       }
 
       async function review(id, status) {
@@ -551,43 +583,108 @@
         }
       });
 
-      const countriesBlock = document.getElementById("countries-block");
-      const usesBlock = document.getElementById("uses-block");
+      const dashTabs = document.getElementById("dash-tabs");
+      const visitorSubtabs = document.getElementById("visitor-subtabs");
 
-      // The queue and the two tallies answer different questions, so one is on
-      // screen at a time rather than a tally hanging below the list.
-      const VIEWS = {
-        countries: { block: countriesBlock, load: () => loadCountries() },
-        uses: { block: usesBlock, load: () => loadUses() },
+      /**
+       * The dashboard's sections. One is on screen at a time: they answer
+       * different questions, and a tally hanging under the review queue read as
+       * part of it.
+       *
+       * `blocks` is every panel a section owns, so switching sections hides the
+       * lot without each one being named twice. `subtabs` is the row that
+       * belongs to the section, absent for the two with nothing to narrow.
+       * `load` takes the sub-tab key, which is "" for a section without one.
+       */
+      const SECTIONS = {
+        review: {
+          blocks: [],
+          subtabs: filters,
+          // The queue is the list itself rather than a panel below it.
+          list: true,
+          load: (status) => load(status),
+        },
+        visitors: {
+          blocks: [document.getElementById("visitors-block"), document.getElementById("countries-block")],
+          subtabs: visitorSubtabs,
+          load: (which) => (which === "countries" ? loadCountries() : loadVisitorTotals()),
+        },
+        uses: {
+          blocks: [document.getElementById("uses-block")],
+          subtabs: null,
+          load: () => loadUses(),
+        },
+        generate: {
+          blocks: [document.getElementById("generate-block")],
+          subtabs: null,
+          load: () => loadGenerateUsage(),
+        },
       };
-      /** "" while the queue is showing, otherwise the key in VIEWS. */
-      let view = "";
 
-      /** Mark the pressed button and clear the rest, across both kinds. */
-      function selectFilter(btn) {
-        for (const b of filters.querySelectorAll("button")) {
+      const ALL_BLOCKS = Object.values(SECTIONS).flatMap((s) => s.blocks);
+
+      /** Which section is showing, and the sub-tab chosen within each. */
+      let section = "review";
+      const chosen = { review: "pending", visitors: "totals" };
+
+      /** Mark one button as selected and clear its siblings. */
+      function markSelected(row, btn) {
+        if (!row) return;
+        for (const b of row.querySelectorAll("button")) {
           b.setAttribute("aria-selected", String(b === btn));
         }
       }
 
-      filters.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-status], button[data-view]");
-        if (!btn) return;
-        selectFilter(btn);
+      /**
+       * Show one section and load it.
+       *
+       * Every panel is hidden first, so a section cannot leave another's table
+       * on screen — which is what happened when each view hid only itself and a
+       * third view was added.
+       */
+      function showSection(key, btn) {
+        section = key;
+        const conf = SECTIONS[key];
+        markSelected(dashTabs, btn ?? dashTabs.querySelector(`[data-tab="${key}"]`));
 
-        view = btn.dataset.view ?? "";
-        for (const [key, v] of Object.entries(VIEWS)) v.block.hidden = key !== view;
+        // Hide every panel and unhide none: each loader reveals its own, on both
+        // the success and the failure path. Unhiding a section's panels here
+        // showed both of the Visitors ones at once, since the section owns two
+        // and only the chosen sub-tab should appear.
+        for (const block of ALL_BLOCKS) block.hidden = true;
 
-        if (view) {
-          list.hidden = true;
-          statusEl.textContent = "";
-          withBusy(btn, VIEWS[view].load);
-          return;
+        for (const other of Object.values(SECTIONS)) {
+          if (other.subtabs) other.subtabs.hidden = other.subtabs !== conf.subtabs;
         }
 
-        list.hidden = false;
-        filter = btn.dataset.status;
-        withBusy(btn, load);
+        list.hidden = !conf.list;
+        if (!conf.list) statusEl.textContent = "";
+        return conf.load(chosen[key] ?? "");
+      }
+
+      dashTabs.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-tab]");
+        if (!btn) return;
+        withBusy(btn, () => showSection(btn.dataset.tab, btn));
+      });
+
+      filters.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-status]");
+        if (!btn) return;
+        markSelected(filters, btn);
+        chosen.review = btn.dataset.status;
+        withBusy(btn, () => load(btn.dataset.status));
+      });
+
+      visitorSubtabs.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-visitors]");
+        if (!btn) return;
+        markSelected(visitorSubtabs, btn);
+        chosen.visitors = btn.dataset.visitors;
+        const conf = SECTIONS.visitors;
+        for (const block of conf.blocks) block.hidden = true;
+        withBusy(btn, () => conf.load(btn.dataset.visitors));
+        // The loader unhides the one that belongs to the sub-tab just chosen.
       });
 
       gateForm.addEventListener("submit", async (e) => {
@@ -613,10 +710,87 @@
       });
 
       // Refresh reloads whichever view is showing.
+      // Reloads whichever section is showing, at its chosen sub-tab.
       const refreshBtn = document.getElementById("refresh");
       refreshBtn.addEventListener("click", () =>
-        withBusy(refreshBtn, () => (view ? VIEWS[view].load() : load()), { label: "Refreshing…" })
+        withBusy(refreshBtn, () => SECTIONS[section].load(chosen[section] ?? ""), { label: "Refreshing…" })
       );
+
+      /* --- Total visitors --------------------------------------------------- */
+      // Two counters, read from the same /api/auth/me the header already calls.
+      // Uniqueness comes from the guest cookie the history needs anyway, so no
+      // IP is read or stored — which is what keeps this out of DPDP scope.
+      async function loadVisitorTotals() {
+        const block = document.getElementById("visitors-block");
+        const table = document.getElementById("visitors");
+        const note = document.getElementById("visitors-note");
+        block.hidden = false;
+        try {
+          const me = await api("/api/auth/me");
+          const v = me.visits ?? {};
+          if (typeof v.visitors !== "number") {
+            note.textContent = "No counters yet. They start once the gallery is visited.";
+            table.innerHTML = "";
+            return;
+          }
+          const views = Number(v.views ?? 0);
+          note.textContent =
+            "Unique visitors are counted by the guest cookie, so one person on two devices counts twice. " +
+            "No IP address is read or stored.";
+          table.innerHTML =
+            "<tr><th>Measure</th><th class='num'>Count</th></tr>" +
+            `<tr><td>Unique visitors</td><td class="num">${v.visitors.toLocaleString()}</td></tr>` +
+            `<tr><td>Page views</td><td class="num">${views.toLocaleString()}</td></tr>` +
+            `<tr><td>Views per visitor</td><td class="num">${
+              v.visitors ? (views / v.visitors).toFixed(1) : "—"
+            }</td></tr>`;
+        } catch (err) {
+          note.textContent = `Could not load the visitor counters: ${err.message}`;
+          table.innerHTML = "";
+        }
+      }
+
+      /* --- Generator usage -------------------------------------------------- */
+      // How much the generator is used, without Google Analytics or any third
+      // party. Counted in the database and returned as numbers: the underlying
+      // table keys on the guest cookie, so no guest id reaches this page. See
+      // supabase/migrations/0006_generate_usage.sql.
+      async function loadGenerateUsage() {
+        const block = document.getElementById("generate-block");
+        const table = document.getElementById("generate");
+        const note = document.getElementById("generate-note");
+        block.hidden = false;
+        try {
+          const u = await api("/api/generate-usage");
+          note.textContent =
+            `${u.users.toLocaleString()} ${u.users === 1 ? "person has" : "people have"} generated ` +
+            `${u.generations.toLocaleString()} ${u.generations === 1 ? "icon" : "icons"} across ` +
+            `${u.names.toLocaleString()} ${u.names === 1 ? "name" : "names"}; ` +
+            `${u.last7Days.toLocaleString()} in the last 7 days, and ` +
+            `${u.contributed.toLocaleString()} were submitted to the library. ` +
+            "History keeps the newest 50 entries per person and is pruned on the retention window, " +
+            "so these count what is retained rather than all time.";
+          if (!u.top.length) {
+            table.innerHTML = "";
+            return;
+          }
+          table.innerHTML =
+            "<tr><th>Prompted name</th><th class='num'>Generations</th>" +
+            "<th class='num'>People</th><th>Last generated</th></tr>" +
+            u.top
+              .map(
+                (r) =>
+                  `<tr><td>${esc(r.name)}</td>` +
+                  `<td class="num">${r.generations.toLocaleString()}</td>` +
+                  `<td class="num">${r.users.toLocaleString()}</td>` +
+                  `<td>${r.lastGenerated ? new Date(r.lastGenerated).toLocaleDateString() : "—"}</td></tr>`
+              )
+              .join("");
+        } catch (err) {
+          note.textContent = `Could not load the generate tally: ${err.message}`;
+          table.innerHTML = "";
+        }
+      }
 
       /* --- Visitors by country --------------------------------------------- */
       // ISO alpha-2 codes come back from the API; the names come from the
@@ -630,12 +804,11 @@
           /* older browser: fall back to the raw code */
         }
         return (code) => {
-          // ZZ is the ISO code for "no country reported". Every row currently under
-        // it is local test traffic, so it is labelled as such — but the code also
-        // covers a real visit that arrives with no CDN header, which this name
-        // would then describe wrongly. Clear the row and rename this back if the
-        // app is ever served without a CDN in front of it.
-        if (code === "ZZ") return "ClaudeTest";
+          // ZZ is the ISO code for "no country reported": a visit that reached
+          // the app with no CDN country header, which covers local development
+          // and a deploy with nothing in front of it. Named for what it is,
+          // because Intl.DisplayNames has no entry for it.
+          if (code === "ZZ") return "Unknown";
           try {
             return names?.of(code) || code;
           } catch {
@@ -673,7 +846,7 @@
             // visit that arrived with no CDN country header, which is every
             // visit in local development.
             note.textContent +=
-              ` "ClaudeTest" (${unknown.views.toLocaleString()} views) is traffic that reached the app` +
+              ` "Unknown" (${unknown.views.toLocaleString()} views) is traffic that reached the app` +
               ` without a country header — local development, or a deploy with no CDN in front of it.`;
           }
           table.innerHTML =
@@ -708,9 +881,12 @@
         try {
           const { icons, totals } = await api("/api/uses");
           block.hidden = false;
+          // "of which", not "more": record_icon_use adds a resizer export to
+            // icon_downloads before it adds the resizer's own total, so the
+            // figure is already inside the downloads count above.
           const resizer = totals.resizerExports
-            ? ` The resizer, which works on files users supply rather than on our icons, ` +
-              `exported ${totals.resizerExports.toLocaleString()} more; no filename is stored.`
+            ? ` Of the downloads, ${totals.resizerExports.toLocaleString()} came from the resizer, ` +
+              `which works on files users supply rather than on our icons; no filename is stored.`
             : "";
           note.textContent =
             `${icons.length.toLocaleString()} ${icons.length === 1 ? "icon" : "icons"} used, ` +
