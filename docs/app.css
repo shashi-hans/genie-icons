@@ -140,7 +140,7 @@ h1 { margin: 0 0 2px; font-size: 18px; text-align: center; padding: 0 12px; colo
   font-size: 14px; color: var(--muted); white-space: nowrap; cursor: pointer;
 }
 .who-badge:hover { border-color: var(--accent); }
-.who-badge .caret { color: var(--muted); font-size: 10px; }
+.who-badge .caret { color: var(--muted); font-size: 12px; }
 .who-menu {
   position: absolute; top: calc(100% + 6px); right: 0; z-index: 15;
   min-width: 100%;
@@ -331,7 +331,7 @@ select option {
 /* --- Narrow screens ------------------------------------------------------ */
 /* One breakpoint, at 640px: below it a phone is holding the page, above it a
    tablet in portrait is wide enough for the desktop layout. Each page sets its
-   own main width as min(1100px, 100%), so nothing here has to undo a fixed
+   own main width as min(1200px, 100%), so nothing here has to undo a fixed
    width — this is about the chrome those pages sit in.
 
    Everything below is a narrowing, never a rewrite. The same markup and the
