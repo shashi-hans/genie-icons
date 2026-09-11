@@ -360,7 +360,7 @@
 
       function cardHtml(row) {
         const w = weights(row.paths);
-        const previews = ["thin", "regular", "fill", "duotone"]
+        const previews = ["thin", "regular", "bold", "fill", "duotone"]
           .map(
             (name) =>
               `<figure><div class="cell"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${w[name]}</svg></div><figcaption>${name}</figcaption></figure>`

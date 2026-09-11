@@ -517,7 +517,10 @@
       // it, and must not be able to.
       const FREE_BASE = "/api/ai";
       const FREE_MODEL_LABEL = "The free model";
-      const GEN_WEIGHTS = ["thin", "regular", "fill", "duotone"];
+      // The weights the library offers, in the order src/types.ts lists them.
+      // deriveWeightInner returns all five, so leaving one out here hides a
+      // weight the generated icon already has.
+      const GEN_WEIGHTS = ["thin", "regular", "bold", "fill", "duotone"];
 
       const contribGate = document.getElementById("contrib-gate");
       const genPrompt = document.getElementById("gen-prompt");
