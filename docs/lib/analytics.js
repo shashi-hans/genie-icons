@@ -26,7 +26,7 @@
 // The ID is not a secret. It identifies the property to Google and is visible in
 // any page that loads GA, so it is a constant here rather than something the
 // server injects.
-const MEASUREMENT_ID = "";
+const MEASUREMENT_ID = "G-7WP6EP719G";
 
 let loaded = false;
 
