@@ -157,30 +157,58 @@ h1 { margin: 0 0 2px; font-size: 18px; text-align: center; padding: 0 12px; colo
 .who-item:hover { background: var(--panel); color: var(--accent); }
 
 /* --- Footer ------------------------------------------------------------- */
+/* A sectioned footer: a brand column, then link groups, then one bottom line.
+   No longer sticky. Four columns of links pinned to the bottom of the viewport
+   would eat a third of a laptop screen on every page; a footer this size belongs
+   at the end of the document, which is where people look for it. */
 footer {
-  position: sticky;
-  bottom: 0;
-  background: var(--bg);
+  background: var(--panel);
   border-top: 1px solid var(--border);
-  padding: 12px 20px;
+  padding: 32px clamp(14px, 4vw, 20px) 20px;
   font-size: 12px;
   color: var(--muted);
-  z-index: 10;
 }
-.footer-inner {
+.footer-inner { max-width: 1200px; margin: 0 auto; }
+
+.foot-cols {
+  display: grid;
+  /* Columns collapse on their own as the screen narrows: no breakpoint decides
+     how many fit, the available width does. */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px 32px;
+}
+/* The brand column carries prose, so it earns more room than a link list. */
+.foot-brand { grid-column: span 1; max-width: 320px; }
+.foot-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.foot-name { font-size: 15px; font-weight: 600; color: var(--accent); }
+.foot-blurb { margin: 0; line-height: 1.6; }
+/* A heading for screen readers and skimmers alike, sized down to a label. */
+.foot-head {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.foot-col a { color: var(--muted); text-decoration: none; }
+.foot-col a:hover { color: var(--accent); text-decoration: underline; }
+.foot-note { line-height: 1.6; }
+
+/* foot-base, not foot-bottom: .foot-bottom was a class on the footer container
+   itself, so reusing the name made this flex rule apply to the container and
+   collapse the column grid above. */
+.foot-base {
   display: flex;
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
-  max-width: 1100px;
-  margin: 0 auto;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 footer a { color: var(--muted); }
 footer .spacer { margin-left: auto; }
-/* The set credit carries its own separator so the narrow rule can hide both at
-   once. The dot is inside the span, so it needs the row's gap added back on its
-   right; a bare space is about a third of it. */
-.foot-sources .foot-dot { margin-right: 10px; }
 
 /* --- Feature page titles ------------------------------------------------- */
 /* A page's own icon beside its heading. The same four icons the homepage cards
@@ -387,11 +415,10 @@ select option {
   .controls { gap: 8px; }
 
   footer { padding: 12px 14px; }
-  /* The footer is sticky, so every line it wraps to is viewport a phone does not
-     get back. The set credit is the one part that is also in LICENSE and the
-     README, so it is what gives way. It carries its own separator, so hiding it
-     takes the dot with it and leaves the spacer that right-aligns the rest. */
-  .foot-sources { display: none; }
+  /* The footer's columns already collapse on their own, so the only thing left
+     to do at this width is close the gap between them. */
+  .foot-cols { gap: 20px; }
+  .foot-base { margin-top: 18px; }
 
   /* Clear of the edges, and clear of a thumb resting at the bottom. */
   #toast { left: 14px; right: 14px; bottom: 16px; transform: translateY(8px); }
