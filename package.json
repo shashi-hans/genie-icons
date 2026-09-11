@@ -6,11 +6,11 @@
   "author": "Shashi Hans",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shashi-hans/icon-genie.git"
+    "url": "git+https://github.com/shashi-hans/genie-icons.git"
   },
-  "homepage": "https://github.com/shashi-hans/icon-genie#readme",
+  "homepage": "https://github.com/shashi-hans/genie-icons#readme",
   "bugs": {
-    "url": "https://github.com/shashi-hans/icon-genie/issues"
+    "url": "https://github.com/shashi-hans/genie-icons/issues"
   },
   "keywords": [
     "react",
