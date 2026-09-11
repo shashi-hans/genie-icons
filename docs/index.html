@@ -41,11 +41,19 @@
          three rows of `auto`, with main centring whatever height they come to.
          dvh rather than vh: on mobile the toolbar collapses as you scroll and vh
          measures the taller state, overflowing by its height. */
-      html, body { height: 100dvh; }
-      body { overflow: hidden; }
+      html { height: 100%; }
+      /* The hero fills the first screen and the page scrolls past it. It used to
+         be locked to exactly one screen (height: 100dvh; overflow: hidden), which
+         clipped anything below the fold — the sectioned footer could not be
+         reached at all. dvh rather than vh: on mobile the toolbar collapses as
+         you scroll and vh measures the taller state. */
+      body { min-height: 100dvh; }
+      main { min-height: calc(100dvh - 160px); }
       header, footer { position: static; }
       header { padding: clamp(8px, 1.4vh, 15px) 20px; }
-      footer { padding: clamp(6px, 1vh, 11px) 20px; }
+      /* No footer padding of its own: the tight one-line rule here was written
+         for the old sticky bar and squashed the sectioned footer that replaced
+         it. app.css sizes it the same as every other page. */
 
       main {
         display: flex;
@@ -516,7 +524,7 @@
     </main>
 
     <footer>
-      <div class="footer-inner foot-bottom" data-site-footer-bar></div>
+      <div class="footer-inner" data-site-footer-bar></div>
     </footer>
 
     <script type="module">

@@ -81,4 +81,6 @@ export const HEADER_PAGES = {
   // Not a tool, so no link of its own is marked; it is reached from the
   // identity menu's "Dashboard".
   "admin.html": { current: "" },
+  // Reachable from the footer rather than the nav: it is a document, not a tool.
+  "privacy.html": { current: "" },
 };

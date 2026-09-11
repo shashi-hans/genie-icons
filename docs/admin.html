@@ -166,23 +166,10 @@
       table.countries tr:last-child td { border-bottom: 0; }
       .flag { margin-right: 8px; }
 
-      footer {
-        /* Sticky as well as pushed down, matching the other pages: it stays on
-           screen while a long review queue scrolls under it. */
-        position: sticky;
-        bottom: 0;
-        background: var(--bg);
-        border-top: 1px solid var(--border);
-        padding: 12px 20px; margin-top: 28px;
-        font-size: 12px; color: var(--muted);
-      }
-      .footer-inner {
-        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-        max-width: 1000px; margin: 0 auto;
-      }
-      .footer-inner .spacer { margin-left: auto; }
-      footer a { color: var(--muted); }
-      .foot-dot { color: var(--border); }
+      /* The footer is app.css's now. This page used to restate it as a sticky
+         one-line bar, and that flex rule on .footer-inner collapsed the shared
+         footer's column grid to a single 320px column. */
+      footer { margin-top: 28px; }
 
       .gate { max-width: 420px; margin: 60px auto; text-align: center; }
       .gate input {
@@ -199,15 +186,12 @@
       /* --- Narrow screens ---------------------------------------------- */
       @media (max-width: 640px) {
         /* The preview column and the submission's details stop fitting side by
-           side: the previews are four fixed cells, so the details column takes
+           side: the previews are five fixed cells, so the details column takes
            whatever is left, which is not enough to read a prompt in. */
         .card { grid-template-columns: 1fr; gap: 12px; }
         /* Labels above values rather than beside them, for the same reason. */
         dl { grid-template-columns: 1fr; gap: 0 0; }
         dl dt { margin-top: 6px; }
-        /* Not sticky, matching the header: a wrapped footer and a wrapped bar
-           together leave little of a phone screen for the queue itself. */
-        footer { position: static; padding: 12px 14px; }
         /* The bar bleeds to the page edges by cancelling main's side padding,
            so it has to cancel the value main actually has, not a guess at it. */
         .page-bar {
