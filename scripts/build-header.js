@@ -97,7 +97,10 @@ if (typeof total === "number") {
     const before = fs.readFileSync(full, "utf8");
     const after = before
       .replace(COUNT_RE, `$1${shown}$2`)
-      .replace(PLACEHOLDER_RE, `$1${total}$2`);
+      // Grouped, like the figure syncSearchPlaceholder writes over it once the
+      // API answers. A bare 9031 here is replaced by 9,031 a moment later,
+      // which is the flicker writing the count into the file exists to remove.
+      .replace(PLACEHOLDER_RE, `$1${shown}$2`);
     if (after === before) continue;
     fs.writeFileSync(full, after);
     console.log(`  ${file}: icon count set to ${shown}`);
