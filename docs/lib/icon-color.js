@@ -43,13 +43,17 @@ export function parseHex(raw) {
  * have written, and the colours go straight into style properties.
  */
 export function readIconTheme() {
-  const empty = { color: null, site: "", swatches: [] };
+  const empty = { color: null, site: "", swatches: [], published: false };
   try {
     const raw = JSON.parse(sessionStorage.getItem(STORE) || "null");
     if (!raw || typeof raw !== "object") return empty;
     return {
       color: parseHex(raw.color),
       site: typeof raw.site === "string" ? raw.site.slice(0, MAX_SITE_CHARS) : "",
+      // Carried back out as well as in. Without it a restored panel labels a
+      // brand's published colour "Applied colour", which claims the site was
+      // read when it refused to be.
+      published: raw.published === true,
       swatches: Array.isArray(raw.swatches)
         ? raw.swatches
             .map((s) => ({ hex: parseHex(s?.hex), source: String(s?.source ?? "") }))
