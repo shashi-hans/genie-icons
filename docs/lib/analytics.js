@@ -37,13 +37,17 @@ let loaded = false;
  * config sent late still leaves the first page_view already gone with the
  * defaults.
  *
- *   anonymize_ip                      truncates the address before storage
  *   allow_google_signals              off, so this is not joined to an ad profile
  *   allow_ad_personalization_signals  off, for the same reason
  *
- * Those three keep this to measurement rather than advertising. They do not move
- * the processing into India and they are not a substitute for the consent this
+ * Both keep this to measurement rather than advertising. They do not move the
+ * processing into India and they are not a substitute for the consent this
  * deliberately does not ask for.
+ *
+ * anonymize_ip is not sent: GA4 has no such setting. It drops the last octet of
+ * every address before storage on its own, and the parameter is a Universal
+ * Analytics field that GA4 ignores. The address still reaches Google's servers
+ * first, which is the part the privacy notice has to say out loud.
  */
 function load() {
   if (loaded || !MEASUREMENT_ID) return;
@@ -68,7 +72,6 @@ function load() {
 
   window.gtag("js", new Date());
   window.gtag("config", MEASUREMENT_ID, {
-    anonymize_ip: true,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
   });

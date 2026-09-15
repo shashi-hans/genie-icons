@@ -853,14 +853,6 @@
         }
       }
 
-      /**
-       * The default view: the 40 popular icons, in the order POPULAR lists them.
-       *
-       * They are spread through the catalogue alphabetically, so one paged
-       * request cannot return them. /api/icons?names= answers with exactly the
-       * icons named, in the order asked for, so the whole set arrives in one
-       * request.
-       */
       /* --- Popular-set cache ------------------------------------------------ */
       // The popular set is the first thing every visitor sees, and assembling it
       // costs a request that carries every weight's markup for 40 icons. So it is
@@ -955,6 +947,13 @@
         setLoadingNote("");
       }
 
+      /**
+       * The default view: the 40 popular icons, in the order POPULAR lists them.
+       *
+       * They are spread through the catalogue alphabetically, so no paged request
+       * can return them. /api/icons?names= answers with exactly the icons named,
+       * in the order asked for, so the whole set arrives in one request.
+       */
       async function loadPopular() {
         const ticket = ++pageRequest;
 
@@ -972,25 +971,10 @@
         }
 
         try {
-          // limit=1, because only the three table-level fields are read from this
-          // response. A full page carries every weight's markup for each icon —
-          // megabytes downloaded to learn the catalogue's size.
-          const res = await api(`/api/icons?limit=1&offset=0`);
-          if (ticket !== pageRequest) return;
-          if (!weightsApplied) {
-            applyWeightOptions(res.weights);
-            weightsApplied = true;
-          }
-          catalogueTotal = res.catalogueTotal ?? res.total ?? 0;
-          if (res.sets) setNames = res.sets;
-
-          // One request per name: /api/icons pages alphabetically, so the 50 are
-          // not reachable in a slice. They resolve in parallel and keep POPULAR's
-          // order, and a name that ever stops existing is skipped rather than
-          // rendering a hole.
-          // One request for the whole set. /api/icons?names= returns exactly the
-          // icons named, in the order asked for, so the 40 arrive together
-          // instead of as 40 searches that each pulled a 400-icon page.
+          // One request for the whole landing. /api/icons?names= returns exactly
+          // the icons named, in the order asked for, and every response carries
+          // the weight list, the set-code table and the catalogue size, so the
+          // grid and the weight selector both come out of this one answer.
           //
           // A name the catalogue no longer has is skipped by the server rather
           // than returned as a hole, so a renamed or removed icon shortens the
@@ -1002,8 +986,12 @@
           const set = await api(`/api/icons?names=${encodeURIComponent(POPULAR.join(","))}`);
           if (ticket !== pageRequest) return;
           const list = set.icons || [];
+          if (!weightsApplied) {
+            applyWeightOptions(set.weights);
+            weightsApplied = true;
+          }
           if (set.sets) setNames = set.sets;
-          catalogueTotal = set.catalogueTotal ?? catalogueTotal;
+          catalogueTotal = set.catalogueTotal ?? set.total ?? 0;
           showPopular(list, catalogueTotal);
           // Only a set that actually arrived is stored, so a short answer is
           // never served back as though it were the whole thing.
