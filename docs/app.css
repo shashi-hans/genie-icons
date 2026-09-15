@@ -177,8 +177,9 @@ footer {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 24px 32px;
 }
-/* The brand column carries prose, so it earns more room than a link list. */
-.foot-brand { grid-column: span 1; max-width: 320px; }
+/* The blurb reads badly across a full column, so the prose is capped while the
+   column keeps its share of the grid. */
+.foot-brand { max-width: 320px; }
 .foot-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .foot-name { font-size: 15px; font-weight: 600; color: var(--accent); }
 .foot-blurb { margin: 0; line-height: 1.6; }
