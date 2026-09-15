@@ -173,7 +173,7 @@ async function unpublishLocal(name) {
 
 /** Delete the icon's source file from the repo. Requires its current blob sha. */
 async function unpublishFromGitHub(name) {
-  const repo = process.env.GH_REPO || "shashi-hans/icon-genie";
+  const repo = process.env.GH_REPO || "shashi-hans/genie-icons";
   const base = process.env.GH_BASE || "main";
   const rel = iconFilePath(name);
   const current = await gh("GET", `/repos/${repo}/contents/${encodeURI(rel)}?ref=${encodeURIComponent(base)}`);
