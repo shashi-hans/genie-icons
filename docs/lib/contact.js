@@ -25,13 +25,17 @@ export const FEEDBACK_EMAIL = "feedback.genie09@gmail.com";
 
 const APP_NAME = "Genie Icons";
 
+// Resolved once per page by initContactLinks, and read by every link built
+// afterwards. Empty until then, which only costs the Reference line.
+let guestId = "";
+
 /**
  * The context block, as plain lines under a separator.
  *
  * Below the signature line so the person's own words come first and this reads
  * as an attachment to the mail rather than the start of it.
  */
-function contextLines(guestId) {
+function contextLines() {
   const lines = [
     `Application: ${APP_NAME}`,
     `Page: ${location.href}`,
@@ -51,7 +55,7 @@ export function mailtoHref(address, subject, intro = "") {
     "",
     "",
     "--- please keep the lines below, they help us find your data ---",
-    ...contextLines(mailtoHref.guestId),
+    ...contextLines(),
   ].join("\r\n");
   // encodeURIComponent, not encodeURI: a subject or body can hold & and #,
   // which would otherwise end the parameter early and truncate the mail.
@@ -77,24 +81,29 @@ export async function initContactLinks() {
   const links = document.querySelectorAll("[data-mailto]");
   if (!links.length) return;
 
-  const apply = () => {
-    for (const el of links) {
-      const address = el.dataset.mailto === "grievance" ? GRIEVANCE_EMAIL : FEEDBACK_EMAIL;
-      const subject =
-        el.dataset.mailtoSubject ||
-        (el.dataset.mailto === "grievance" ? `${APP_NAME}: grievance` : `${APP_NAME}: feedback`);
-      el.href = mailtoHref(address, subject, el.dataset.mailtoIntro ?? "");
-      // The address itself as the label, where the markup left it empty.
-      if (el.dataset.mailtoLabel === "address") el.textContent = address;
-    }
+  const fill = (el) => {
+    const address = el.dataset.mailto === "grievance" ? GRIEVANCE_EMAIL : FEEDBACK_EMAIL;
+    const subject =
+      el.dataset.mailtoSubject ||
+      (el.dataset.mailto === "grievance" ? `${APP_NAME}: grievance` : `${APP_NAME}: feedback`);
+    el.href = mailtoHref(address, subject, el.dataset.mailtoIntro ?? "");
+    // The address itself as the label, where the markup left it empty.
+    if (el.dataset.mailtoLabel === "address") el.textContent = address;
   };
 
-  apply();
+  for (const el of links) {
+    fill(el);
+    // Rebuilt on the way out, so the Date line says when the mail was started
+    // rather than when the tab was opened. The href is set before the browser
+    // follows it, so this needs no preventDefault.
+    el.addEventListener("click", () => fill(el));
+  }
+
   try {
     const me = await loadMe();
     if (me?.guestId) {
-      mailtoHref.guestId = me.guestId;
-      apply();
+      guestId = me.guestId;
+      for (const el of links) fill(el);
     }
   } catch {
     // No API, so no reference line. The links still work.
