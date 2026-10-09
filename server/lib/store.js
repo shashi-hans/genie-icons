@@ -68,6 +68,7 @@
  * @property {(icon: object) => Promise<object>} upsertIcon
  * @property {(name: string) => Promise<boolean>} removeIcon  true when the name is no longer served
  * @property {(name: string, by?: string) => Promise<boolean>} hideIcon    admin removal; works on built icons too
+ * @property {(names: string[], by?: string) => Promise<number>} hideIcons  the same for a list, in one round trip
  * @property {(name: string) => Promise<boolean>} unhideIcon               true when it was hidden and now is not
  * @property {() => Promise<{name: string, hiddenAt: string|null, hiddenBy: string|null}[]>} listHiddenIcons
  * @property {(guestId: string, count: boolean, country?: string) => Promise<{visitors: number, views: number}>} recordVisit

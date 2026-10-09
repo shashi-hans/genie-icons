@@ -20,9 +20,11 @@ const ROUTES = {
   "GET /generate-usage": () => import("./routes/generate-usage.js"),
   "POST /uses": () => import("./routes/uses.js"),
   "GET /visits/countries": () => import("./routes/visit-countries.js"),
-  // Exact routes are matched before the patterns below, so this is not shadowed
-  // by /icons/:name.
+  // Exact routes are matched before the patterns below, so these are not
+  // shadowed by /icons/:name.
   "GET /icons/hidden": () => import("./routes/icon-item.js").then((m) => ({ default: m.hidden })),
+  "GET /icons/duplicates": () => import("./routes/icon-duplicates.js"),
+  "POST /icons/remove": () => import("./routes/icon-remove.js"),
 };
 
 // Routes with a path parameter, matched after the exact table above.
