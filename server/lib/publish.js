@@ -221,6 +221,156 @@ export async function unpublishIcon({ name }) {
   }
 }
 
+/* --- Removing artwork from the package -------------------------------------
+ *
+ * unpublishIcon above takes back one approved contribution and refuses to touch
+ * a directory holding a built six-weight set. This is the other thing: deleting
+ * artwork the package ships, which is how a near-duplicate actually leaves the
+ * npm package rather than only the gallery.
+ *
+ * It is permanent in a way hiding is not. A project that already imports the
+ * component gets a build error on the next release, so the admin page asks for
+ * confirmation and names what it is about to remove.
+ *
+ * Batched on purpose. One press removing one icon would mean one commit to the
+ * default branch per press, and on a deployed site one rebuild per press. A
+ * selection goes as a single commit.
+ */
+
+/** Remove whole icon directories from the local working tree. */
+async function removeLocal(names) {
+  const root = join(ROOT, "raw-svgs");
+  const removed = [];
+  for (const name of names) {
+    const dir = resolve(root, name);
+    // This deletes a directory tree, so it checks rather than trusts that the
+    // path it was handed is inside raw-svgs/. The API filters names before they
+    // reach here; a script calling this directly does not.
+    if (dir !== join(root, name) || !dir.startsWith(root + "/")) continue;
+    // Reported only when there was something to delete. rm with force treats a
+    // missing directory as success, so counting every name meant answering "21
+    // removed" for a list of names that were already gone.
+    try {
+      await access(dir, constants.F_OK);
+    } catch {
+      continue;
+    }
+    await rm(dir, { recursive: true, force: true });
+    removed.push(name);
+  }
+  return {
+    mode: "local",
+    removed,
+    url: null,
+    detail:
+      `${removed.length} ${removed.length === 1 ? "directory" : "directories"} removed from raw-svgs/. ` +
+      "Run `npm run build:icons` to drop the components.",
+  };
+}
+
+/**
+ * Remove the same directories from the repo, as one commit.
+ *
+ * Through the Git data API rather than the contents API: that one deletes a
+ * single file per call and makes a commit each time, which for a selection of
+ * forty icons is forty commits and forty rebuilds.
+ */
+async function removeFromGitHub(names) {
+  const repo = process.env.GH_REPO || "shashi-hans/genie-icons";
+  const base = process.env.GH_BASE || "main";
+
+  const ref = await gh("GET", `/repos/${repo}/git/ref/heads/${encodeURIComponent(base)}`);
+  const head = ref.object.sha;
+  const commit = await gh("GET", `/repos/${repo}/git/commits/${head}`);
+
+  // Every file under each directory, because a tree entry is a file: there is no
+  // "delete this folder" in the git data API.
+  const tree = await gh("GET", `/repos/${repo}/git/trees/${commit.tree.sha}?recursive=1`);
+  // GitHub drops entries rather than erroring once a tree is large enough, and a
+  // silently short list here would commit a partial removal that looks complete.
+  if (tree.truncated) {
+    throw new Error("The repository tree came back truncated; nothing was removed.");
+  }
+
+  // Matched by the directory name parsed out of each path, so this is one Set
+  // lookup per entry. Testing every wanted prefix against every path was the
+  // number of icons times the number of files in the repo — tens of millions of
+  // comparisons for one press.
+  const wanted = new Set(names);
+  const hit = new Set();
+  const deletions = [];
+  for (const entry of tree.tree) {
+    if (entry.type !== "blob") continue;
+    const dir = entry.path.startsWith("raw-svgs/") ? entry.path.split("/")[1] : null;
+    if (!dir || !wanted.has(dir)) continue;
+    hit.add(dir);
+    deletions.push({ path: entry.path, mode: entry.mode, type: "blob", sha: null });
+  }
+
+  if (!deletions.length) {
+    return { mode: "none", removed: [], url: null, detail: "Nothing to remove: no such files in the repository." };
+  }
+
+  // The names go in the body so the commit records what left and why, but a
+  // selection of several hundred would make a message nothing can read.
+  const removed = [...hit];
+  const listed = removed.slice(0, 50);
+  const body =
+    `Removed from the catalogue by an admin:\n${listed.map((n) => `- ${n}`).join("\n")}` +
+    (removed.length > listed.length ? `\n- and ${removed.length - listed.length} more` : "");
+
+  const newTree = await gh("POST", `/repos/${repo}/git/trees`, {
+    base_tree: commit.tree.sha,
+    tree: deletions,
+  });
+  const made = await gh("POST", `/repos/${repo}/git/commits`, {
+    message: `feat(icons): remove ${removed.length} ${removed.length === 1 ? "icon" : "icons"}\n\n${body}`,
+    tree: newTree.sha,
+    parents: [head],
+  });
+  await gh("PATCH", `/repos/${repo}/git/refs/heads/${encodeURIComponent(base)}`, { sha: made.sha });
+
+  return {
+    mode: "github-commit",
+    // What the tree actually held, not what was asked for: a name with no files
+    // in the repository was not removed by this.
+    removed,
+    url: `https://github.com/${repo}/commit/${made.sha}`,
+    detail: `${deletions.length} files removed from ${base} in one commit. They leave the package on the next build.`,
+  };
+}
+
+/**
+ * Delete the artwork for `names` wherever this process can actually write.
+ *
+ * Never throws, like the two above: the caller reports the outcome, and a
+ * failure here must not look like a half-done delete.
+ */
+export async function removeIconArtwork(names) {
+  try {
+    if (!names.length) return { mode: "none", removed: [], url: null, detail: "Nothing selected." };
+    if (await treeIsWritable()) return await removeLocal(names);
+    if (process.env.GITHUB_TOKEN) return await removeFromGitHub(names);
+    return {
+      mode: "none",
+      removed: [],
+      url: null,
+      detail:
+        "Nothing was removed: the working tree is read-only and GITHUB_TOKEN is unset. " +
+        "The icons are out of the gallery, and their files are still in raw-svgs/.",
+      error: "no writable target",
+    };
+  } catch (err) {
+    return {
+      mode: "failed",
+      removed: [],
+      url: null,
+      detail: `The icons are out of the gallery, but their files could not be removed: ${err.message}`,
+      error: err.message,
+    };
+  }
+}
+
 /**
  * Publish an approved icon, choosing the strategy that can actually persist.
  *

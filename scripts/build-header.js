@@ -19,7 +19,7 @@
 // comment in the output says.
 import fs from "node:fs";
 import path from "node:path";
-import { DOCS_DIR } from "./utils.js";
+import { DOCS_DIR, ROOT } from "./utils.js";
 import { headerBarHtml, HEADER_PAGES } from "../docs/lib/header-markup.js";
 
 // Matches the mount point whether it is still empty or already filled.
@@ -68,19 +68,33 @@ console.log(
 );
 
 /* --- icon count ----------------------------------------------------------- */
-// The catalogue's size appears in the markup twice: the homepage stat and the
-// gallery's search placeholder. Both paint before any request answers, so both
-// have to be in the file, and both were hand-typed and had gone stale — the
-// homepage said 8,470 against a catalogue of 9,032.
+// The catalogue's size is quoted in three places a reader sees before any code
+// runs: the homepage stat, the gallery's search placeholder, and the package
+// description npm puts on the listing page. All three were hand-typed once and
+// all three went stale — the homepage said 8,470 against a catalogue of 9,032,
+// and the package said 9,032 against one of 7,892.
 //
-// Written from docs/icons.json, which generate-index.js has already produced by
-// the time this runs, so the figure in the file is the figure the build emitted.
+// So none of them is hand-typed now. Each is written from docs/icons.json, which
+// generate-index.js has already produced by the time this runs, which makes the
+// figure in the file the figure the build actually emitted. Removing or adding
+// artwork needs no edit here or anywhere else: rebuild and every quoted total
+// moves with it.
 //
-// It can still differ from what /api/icons reports, by the number of icons an
-// admin has hidden. That difference is live and belongs to the running site;
-// the page replaces the figure with the server's as soon as it answers.
-const COUNT_RE = /(<b\b[^>]*\bdata-icon-count\b[^>]*>)[\d,]*(<\/b>)/g;
-const PLACEHOLDER_RE = /(placeholder="Search icon from list of )[^"]*( icons \.\.\.")/;
+// Adding a fourth place means one more entry in TARGETS below. Each pattern has
+// to capture the text either side of the digits, so the replacement can put the
+// new number back between them.
+//
+// A page's figure can still differ from what /api/icons reports, by the number of
+// icons an admin has hidden. That difference is live and belongs to the running
+// site; the page replaces the build's figure with the server's as soon as it
+// answers, which is why both exist.
+const TARGETS = [
+  { file: path.join(DOCS_DIR, "index.html"), re: /(<b\b[^>]*\bdata-icon-count\b[^>]*>)[\d,]*(<\/b>)/g },
+  { file: path.join(DOCS_DIR, "gallery.html"), re: /(placeholder="Search icon from list of )[^"]*( icons \.\.\.")/ },
+  // Raw text rather than parse-and-stringify, so the file keeps its own
+  // formatting and key order instead of being rewritten by JSON.stringify.
+  { file: path.join(ROOT, "package.json"), re: /("description": "[^"]*?library of )[\d,]*( icons)/ },
+];
 
 let total = null;
 try {
@@ -90,19 +104,16 @@ try {
 }
 
 if (typeof total === "number") {
+  // Grouped, matching the figure the gallery writes over it once the API
+  // answers. A bare 9031 replaced by 9,031 a moment later is the flicker that
+  // writing the count into the file exists to remove.
   const shown = total.toLocaleString("en-US");
-  for (const file of ["index.html", "gallery.html"]) {
-    const full = path.join(DOCS_DIR, file);
-    if (!fs.existsSync(full)) continue;
-    const before = fs.readFileSync(full, "utf8");
-    const after = before
-      .replace(COUNT_RE, `$1${shown}$2`)
-      // Grouped, like the figure syncSearchPlaceholder writes over it once the
-      // API answers. A bare 9031 here is replaced by 9,031 a moment later,
-      // which is the flicker writing the count into the file exists to remove.
-      .replace(PLACEHOLDER_RE, `$1${shown}$2`);
+  for (const { file, re } of TARGETS) {
+    if (!fs.existsSync(file)) continue;
+    const before = fs.readFileSync(file, "utf8");
+    const after = before.replace(re, `$1${shown}$2`);
     if (after === before) continue;
-    fs.writeFileSync(full, after);
-    console.log(`  ${file}: icon count set to ${shown}`);
+    fs.writeFileSync(file, after);
+    console.log(`  ${path.basename(file)}: icon count set to ${shown}`);
   }
 }

@@ -166,6 +166,122 @@
       table.countries tr:last-child td { border-bottom: 0; }
       .flag { margin-right: 8px; }
 
+      /* --- Icon list ---------------------------------------------------- */
+      /* Names beside artwork. The name column is fixed and the grid takes the
+         rest, so widening the window adds cards rather than stretching the list
+         of names into a sparse column. */
+      .iconlist { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+      .iconlist-side { position: sticky; top: 88px; }
+      .iconlist-side input[type="search"] {
+        width: 100%; font: inherit; font-size: 14px; padding: 8px 10px;
+        background: var(--panel); color: var(--fg);
+        border: 1px solid var(--border); border-radius: 8px;
+      }
+      .iconlist-side .note { margin: 8px 0; }
+      /* Scrolls on its own so a page of 60 names never pushes the grid down. */
+      .iconlist-names {
+        list-style: none; margin: 0; padding: 0;
+        max-height: 60vh; overflow-y: auto;
+        border: 1px solid var(--border); border-radius: 8px;
+      }
+      .name-row {
+        display: flex; align-items: center; gap: 8px;
+        padding: 5px 10px; font-size: 12px; cursor: pointer;
+        border-bottom: 1px solid var(--border);
+      }
+      .iconlist-names .name-row:last-child { border-bottom: 0; }
+      .name-row:hover { background: var(--panel); }
+      /* The state of a name, in the column where names are read. Grey until a
+         side is chosen, so an untouched list has no colour to interpret. */
+      .name-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex: none; }
+      .name-row[data-state="in"] .name-dot { background: var(--ok); }
+      .name-row[data-state="out"] .name-dot { background: var(--bad); }
+
+      .iconlist-cards {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+        gap: 10px; align-content: start;
+      }
+      .iconlist-cards[aria-busy="true"] { opacity: 0.55; }
+      .pick-card {
+        position: relative; margin: 0; padding: 16px 6px 10px; text-align: center;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      }
+      .pick-card[data-state="in"] { border-color: var(--ok); }
+      .pick-card[data-state="out"] { border-color: var(--bad); }
+      .pick-card svg { width: 30px; height: 30px; color: var(--fg); }
+      .pick-card figcaption { margin-top: 8px; font-size: 12px; color: var(--muted); word-break: break-word; line-height: 1.35; }
+      /* In the card's corner: the cells are 112px wide, and a row of buttons
+         under the name would leave no room for the name. */
+      .pick-btns { position: absolute; top: 5px; right: 5px; display: flex; gap: 3px; }
+      .pick-btns button {
+        width: 20px; height: 20px; padding: 0; display: grid; place-items: center;
+        font: 600 14px/1 inherit; cursor: pointer;
+        background: var(--bg); color: var(--muted);
+        border: 1px solid var(--border); border-radius: 5px;
+      }
+      .pick-in:hover, .pick-in[aria-pressed="true"] { border-color: var(--ok); color: var(--ok); }
+      .pick-out:hover, .pick-out[aria-pressed="true"] { border-color: var(--bad); color: var(--bad); }
+      .pick-in[aria-pressed="true"], .pick-out[aria-pressed="true"] { background: var(--panel); }
+      .iconlist-pager { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+      .iconlist-pager .note { margin: 0; }
+
+      /* Both lists under the grid, so they are read after what produced them. */
+      .iconlist-picks {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px; margin-top: 20px; padding-top: 16px;
+        border-top: 1px solid var(--border);
+      }
+      .pick-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+      .pick-head strong { font-size: 14px; }
+      .pick-head .btn { height: auto; padding: 4px 9px; font-size: 12px; }
+      .pick-group[data-group="in"] .pick-head strong { color: var(--ok); }
+      .pick-group[data-group="out"] .pick-head strong { color: var(--bad); }
+      .pick-chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 26vh; overflow-y: auto; }
+      .pick-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 4px 3px 9px; font-size: 12px;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
+      }
+      .pick-chip button {
+        width: 16px; height: 16px; padding: 0; border: 0; border-radius: 50%;
+        background: transparent; color: var(--muted); font: inherit; line-height: 1; cursor: pointer;
+      }
+      .pick-chip button:hover { color: var(--bad); }
+
+      /* --- Duplicates --------------------------------------------------- */
+      .dupe-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+      .dupe-bar .spacer { margin-left: auto; }
+      .dupe-bar input[type="search"] {
+        font: inherit; font-size: 14px; padding: 7px 10px; min-width: 200px;
+        background: var(--panel); color: var(--fg);
+        border: 1px solid var(--border); border-radius: 8px;
+      }
+      .dupe-bar .note { margin: 0; }
+      /* The one destructive button on the page, coloured like one. */
+      .btn.bad:not(:disabled) { border-color: var(--bad); color: var(--bad); }
+      .btn.bad:not(:disabled):hover { background: var(--bad); color: var(--bg); }
+
+      .dupe-group { border-top: 1px solid var(--border); padding: 12px 0; }
+      .dupe-group:first-child { border-top: 0; }
+      .dupe-key {
+        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        font-size: 13px; color: var(--muted); margin-bottom: 8px;
+      }
+      .dupe-keep { height: auto; padding: 3px 8px; font-size: 12px; }
+      .dupe-cards { display: flex; flex-wrap: wrap; gap: 8px; }
+      /* A label, so the whole card is the checkbox's hit area. */
+      .dupe-card {
+        display: flex; flex-direction: column; align-items: center; gap: 5px;
+        width: 108px; padding: 10px 6px; cursor: pointer;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      }
+      .dupe-card:hover { border-color: var(--accent); }
+      .dupe-card.picked { border-color: var(--bad); }
+      .dupe-card input { margin: 0; accent-color: var(--bad); }
+      .dupe-card svg { width: 28px; height: 28px; color: var(--fg); }
+      .dupe-name { font-size: 12px; color: var(--fg); word-break: break-word; text-align: center; line-height: 1.3; }
+      .dupe-set { font-size: 12px; color: var(--muted); }
+
       /* The footer is app.css's now. This page used to restate it as a sticky
          one-line bar, and that flex rule on .footer-inner collapsed the shared
          footer's column grid to a single 320px column. */
@@ -198,6 +314,12 @@
           margin: -20px calc(-1 * clamp(14px, 4vw, 20px)) 16px;
           padding: 12px clamp(14px, 4vw, 20px);
         }
+        /* The icon list stacks: a 240px name column beside a grid leaves the
+           grid about two cards wide on a phone. The name column also stops
+           sticking, since at this width it would cover the cards it describes. */
+        .iconlist { grid-template-columns: 1fr; }
+        .iconlist-side { position: static; }
+        .iconlist-names { max-height: 30vh; }
       }
     </style>
   </head>
@@ -264,6 +386,7 @@
           <button class="btn" type="button" data-tab="visitors" aria-selected="false">Visitors</button>
           <button class="btn" type="button" data-tab="uses" aria-selected="false">Icon usage</button>
           <button class="btn" type="button" data-tab="generate" aria-selected="false">Generator usage</button>
+          <button class="btn" type="button" data-tab="iconlist" aria-selected="false">Icon list</button>
         </nav>
 
         <div class="filters" id="filters" data-subtabs="review">
@@ -276,6 +399,11 @@
         <div class="filters" id="visitor-subtabs" data-subtabs="visitors" hidden>
           <button class="btn" type="button" data-visitors="totals" aria-selected="true">Total visitors</button>
           <button class="btn" type="button" data-visitors="countries" aria-selected="false">By country</button>
+        </div>
+
+        <div class="filters" id="iconlist-subtabs" data-subtabs="iconlist" hidden>
+          <button class="btn" type="button" data-iconlist="browse" aria-selected="true">Browse</button>
+          <button class="btn" type="button" data-iconlist="dupes" aria-selected="false">Duplicates</button>
         </div>
 
         <div id="status"></div>
@@ -312,6 +440,61 @@
           <p class="note" id="generate-note"></p>
           <table class="countries" id="generate"></table>
         </section>
+
+        <!-- A working note, not a control. The two lists live in this browser
+             and are never sent anywhere: nothing here hides an icon, publishes
+             one, or changes what a visitor sees. Hiding is a separate button in
+             the review queue above. See docs/lib/admin-icon-list.js. -->
+        <section id="iconlist-block" hidden>
+          <h2 class="section-heading">Icon list</h2>
+          <p class="note" id="iconlist-note"></p>
+          <div class="iconlist">
+            <div class="iconlist-side">
+              <input type="search" id="iconlist-q" placeholder="Filter by name" autocomplete="off" />
+              <p class="note" id="iconlist-count"></p>
+              <ul class="iconlist-names" id="iconlist-names"></ul>
+            </div>
+            <div class="iconlist-main">
+              <div class="iconlist-cards" id="iconlist-cards"></div>
+              <div class="iconlist-pager" id="iconlist-pager" hidden>
+                <button class="btn" type="button" id="iconlist-prev">Previous</button>
+                <span class="note" id="iconlist-page"></span>
+                <button class="btn" type="button" id="iconlist-next">Next</button>
+              </div>
+            </div>
+          </div>
+          <div class="iconlist-picks" id="iconlist-picks" hidden></div>
+        </section>
+
+        <!-- The one view in this project that deletes artwork rather than
+             hiding it. Removing takes the raw-svgs/ directory with it, so the
+             icon leaves the npm package on the next build and anything
+             importing that component stops building. Hence the typed
+             confirmation. See docs/lib/admin-duplicates.js. -->
+        <section id="dupes-block" hidden>
+          <h2 class="section-heading">Duplicates</h2>
+          <p class="note" id="dupes-note"></p>
+          <div class="filters" id="dupes-kind">
+            <button class="btn" type="button" data-dupes="shape" aria-selected="true">Same drawing</button>
+            <button class="btn" type="button" data-dupes="base" aria-selected="false">Same base name</button>
+          </div>
+          <div class="dupe-bar">
+            <input type="search" id="dupes-q" placeholder="Filter by name" autocomplete="off" />
+            <span class="note" id="dupes-chosen">Nothing selected.</span>
+            <span class="spacer"></span>
+            <button class="btn" type="button" id="dupes-select-all">Select all but the first, everywhere</button>
+            <button class="btn" type="button" id="dupes-copy" disabled>Copy selected</button>
+            <button class="btn" type="button" id="dupes-clear" disabled>Clear selection</button>
+            <button class="btn bad" type="button" id="dupes-remove" disabled>Remove selected</button>
+          </div>
+          <p class="note" id="dupes-status"></p>
+          <div id="dupes-groups"></div>
+          <div class="iconlist-pager">
+            <button class="btn" type="button" id="dupes-prev">Previous</button>
+            <span class="note" id="dupes-page"></span>
+            <button class="btn" type="button" id="dupes-next">Next</button>
+          </div>
+        </section>
       </section>
     </main>
 
@@ -325,6 +508,8 @@
       import { deriveWeightInner as weights } from "./stroke-weights.js";
       import { initFooter } from "./lib/footer.js";
       import { withBusy } from "./lib/busy.js";
+      import { initIconList } from "./lib/admin-icon-list.js";
+      import { initDuplicates } from "./lib/admin-duplicates.js";
       // Same header as the other five pages. It owns identity, the theme
       // toggle and Log out, so none of those are this page's job any more.
       import { initHeader } from "./lib/header.js";
@@ -585,6 +770,7 @@
 
       const dashTabs = document.getElementById("dash-tabs");
       const visitorSubtabs = document.getElementById("visitor-subtabs");
+      const iconlistSubtabs = document.getElementById("iconlist-subtabs");
 
       /**
        * The dashboard's sections. One is on screen at a time: they answer
@@ -619,13 +805,63 @@
           subtabs: null,
           load: () => loadGenerateUsage(),
         },
+        iconlist: {
+          blocks: [document.getElementById("iconlist-block"), document.getElementById("dupes-block")],
+          subtabs: iconlistSubtabs,
+          load: (which) => (which === "dupes" ? loadDuplicates() : iconList.load()),
+        },
       };
+
+      // Its own module: the section is a few hundred lines of its own state, and
+      // this page is long enough already.
+      const iconList = initIconList({
+        api,
+        ids: {
+          block: "iconlist-block",
+          note: "iconlist-note",
+          search: "iconlist-q",
+          count: "iconlist-count",
+          names: "iconlist-names",
+          cards: "iconlist-cards",
+          pager: "iconlist-pager",
+          pageLabel: "iconlist-page",
+          prev: "iconlist-prev",
+          next: "iconlist-next",
+          picks: "iconlist-picks",
+        },
+      });
+
+      // The only place artwork is deleted rather than hidden, so it is a module
+      // of its own with its own confirmation.
+      const loadDuplicates = initDuplicates({
+        api,
+        ids: {
+          block: "dupes-block",
+          note: "dupes-note",
+          subtabs: "dupes-kind",
+          search: "dupes-q",
+          chosenCount: "dupes-chosen",
+          selectAll: "dupes-select-all",
+          copy: "dupes-copy",
+          clear: "dupes-clear",
+          remove: "dupes-remove",
+          status: "dupes-status",
+          groups: "dupes-groups",
+          pageLabel: "dupes-page",
+          prev: "dupes-prev",
+          next: "dupes-next",
+        },
+        // A removal changes the catalogue, so the browse view's cached name list
+        // is no longer the truth. Dropping it is enough: reloading the page threw
+        // away the message saying what had just happened.
+        onRemoved: () => iconList.forget(),
+      });
 
       const ALL_BLOCKS = Object.values(SECTIONS).flatMap((s) => s.blocks);
 
       /** Which section is showing, and the sub-tab chosen within each. */
       let section = "review";
-      const chosen = { review: "pending", visitors: "totals" };
+      const chosen = { review: "pending", visitors: "totals", iconlist: "browse" };
 
       /** Mark one button as selected and clear its siblings. */
       function markSelected(row, btn) {
@@ -685,6 +921,16 @@
         for (const block of conf.blocks) block.hidden = true;
         withBusy(btn, () => conf.load(btn.dataset.visitors));
         // The loader unhides the one that belongs to the sub-tab just chosen.
+      });
+
+      iconlistSubtabs.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-iconlist]");
+        if (!btn) return;
+        markSelected(iconlistSubtabs, btn);
+        chosen.iconlist = btn.dataset.iconlist;
+        const conf = SECTIONS.iconlist;
+        for (const block of conf.blocks) block.hidden = true;
+        withBusy(btn, () => conf.load(btn.dataset.iconlist));
       });
 
       gateForm.addEventListener("submit", async (e) => {

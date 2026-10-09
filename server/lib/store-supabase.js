@@ -506,6 +506,30 @@ export function createSupabaseStore() {
       return true;
     },
 
+    /**
+     * The same for a whole list, in one request.
+     *
+     * A bulk removal hides several hundred names at once. One call per name is
+     * several hundred round trips, which is slower than the 15s a deployed
+     * function is given; PostgREST takes an array body, so the whole list is one
+     * insert and one cache invalidation.
+     *
+     * Chunked because the list travels in the URL-less body but still has to be
+     * a request a proxy will carry, and because one failed chunk should not take
+     * a thousand rows with it.
+     */
+    async hideIcons(names, by) {
+      const unique = [...new Set(names)];
+      for (let i = 0; i < unique.length; i += 500) {
+        await sb("POST", "/hidden_icons?on_conflict=name", {
+          body: unique.slice(i, i + 500).map((name) => ({ name, hidden_by: by ?? null })),
+          prefer: "resolution=merge-duplicates",
+        });
+      }
+      invalidateHidden();
+      return unique.length;
+    },
+
     /** Put a hidden name back. True when it was hidden and now is not. */
     async unhideIcon(name) {
       const rows = await sb("DELETE", `/hidden_icons?name=${eq(name)}`, {
