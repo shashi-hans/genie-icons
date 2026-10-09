@@ -522,7 +522,7 @@
       import { initTheme, onThemeChange } from "./lib/theme.js";
       import { api, showToast, download, recordUse } from "./lib/api.js";
       import { withBusy } from "./lib/busy.js";
-      import { readSearch, writeSearch, recordActivity, readActivity, clearActivity } from "./lib/local-store.js";
+      import { readSearch, writeSearch, recordActivity, readActivity, clearActivity, writeIconTotal } from "./lib/local-store.js";
 
       const grid = document.getElementById("grid");
       const search = document.getElementById("search");
@@ -713,7 +713,7 @@
       });
 
       /* --- Paging ----------------------------------------------------------
-       * The catalogue is past 8,000 icons, so neither the whole list nor the
+       * The catalogue is thousands of icons, so neither the whole list nor the
        * whole search can come to the browser: the grid asks for the slice it can
        * actually paint and the filter runs on the server. See
        * server/routes/icons.js.
@@ -732,11 +732,10 @@
        * Derived rather than fixed because the cell size is a user control: at
        * size 16 a laptop screen holds several hundred cells, at 96 a few dozen.
        */
-      // One page is 40 icons, whatever the viewport. It used to be derived from
-      // how many cells fit — 48 on a small laptop, 285 on a large monitor — which
-      // made the page a different size for every reader and had to be recomputed
-      // on resize. 40 also matches the popular set, so the first screen and every
-      // page after it hold the same number.
+      // One page is this many icons, whatever the viewport. It used to be derived
+      // from how many cells fit — 48 on a small laptop, 285 on a large monitor —
+      // which made the page a different size for every reader and had to be
+      // recomputed on resize.
       const PAGE_SIZE = 40;
 
 
@@ -775,17 +774,15 @@
       // not a measured popularity order. Every name is verified to exist in the
       // catalogue. Edit the array to change the set; nothing else depends on it.
       //
-      // Searching still reaches all 9,032: the moment there is a query, this is
-      // out of the way and the server does the filtering.
+      // Searching still reaches the whole catalogue: the moment there is a
+      // query, this is out of the way and the server does the filtering.
       const POPULAR = [
-        "magnifying-glass", "house", "list", "link", "x",
+        "magnifying-glass", "house", "list-bullets", "link", "x",
         "check", "plus", "minus", "gear", "user",
-        "users", "heart", "star", "bell", "bookmark",
-        "chat-circle", "paper-plane", "thumbs-up", "eye", "shopping-cart",
-        "credit-card", "tag", "trash", "pencil", "copy",
-        "download", "upload", "share", "printer", "floppy-disk",
-        "funnel", "arrows-clockwise", "file", "folder", "image",
-        "camera", "play", "calendar", "clock", "envelope",
+        "users", "heart", "star", "bell", "chat-circle",
+        "eye", "trash", "pencil", "copy", "share",
+        "download", "upload", "file-text", "folder", "image",
+        "calendar", "clock", "envelope", "shopping-cart", "tag",
       ];
 
       async function loadPage({ reset = false } = {}) {
@@ -855,7 +852,7 @@
 
       /* --- Popular-set cache ------------------------------------------------ */
       // The popular set is the first thing every visitor sees, and assembling it
-      // costs a request that carries every weight's markup for 40 icons. So it is
+      // costs a request that carries every weight's markup for each icon in it. So it is
       // stored once and read from storage on every later landing, with no request
       // at all.
       //
@@ -875,7 +872,10 @@
       // An older entry lacks the field and is dropped rather than misread.
       // 4 drops entries built before /api/icons?names=, which are short by
       // whichever names a substring search could not reach on one page.
-      const SET_VERSION = 4;
+      // 5 drops entries holding a catalogue total from before a large removal:
+      // refreshTotal corrects the figure now, but bumping this clears the ones
+      // already in people's browsers rather than waiting out their fortnight.
+      const SET_VERSION = 5;
       const CACHE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
       /** The stored set, or null when absent, stale, corrupt or for another list. */
@@ -948,7 +948,37 @@
       }
 
       /**
-       * The default view: the 40 popular icons, in the order POPULAR lists them.
+       * Ask the server how big the catalogue is now, and correct what the cache
+       * claimed.
+       *
+       * limit=1 because only the table-level `catalogueTotal` is wanted: a full
+       * page carries every weight's markup for every icon on it, which is
+       * megabytes to learn one number.
+       *
+       * Silent on failure. The figure on screen came from a cache that was right
+       * when it was written, and an error banner over a working grid would be
+       * worse than a slightly old number.
+       */
+      async function refreshTotal(ticket) {
+        try {
+          const res = await api("/api/icons?limit=1&offset=0");
+          if (ticket !== pageRequest) return;
+          const total = res.catalogueTotal ?? res.total;
+          if (typeof total !== "number" || total === catalogueTotal) return;
+          catalogueTotal = total;
+          countEl.textContent = `${icons.length} of ${total.toLocaleString()}`;
+          syncSearchPlaceholder(total);
+          writeIconTotal(total);
+          // Written back, so the next landing starts from the corrected figure
+          // rather than making this request again to learn the same thing.
+          writePopularCache(icons, total, setNames);
+        } catch {
+          /* offline, or no API: the cached figure stands */
+        }
+      }
+
+      /**
+       * The default view: the popular icons, in the order POPULAR lists them.
        *
        * They are spread through the catalogue alphabetically, so no paged request
        * can return them. /api/icons?names= answers with exactly the icons named,
@@ -967,6 +997,14 @@
             weightsApplied = true;
           }
           showPopular(cached.icons, catalogueTotal);
+          // The drawings keep; the total does not. An icon's artwork is the same
+          // next week, so caching it is the point of all this — but the size of
+          // the catalogue moves whenever artwork is added or removed, and the
+          // stored figure went on claiming 9,010 against a catalogue of 7,872.
+          //
+          // So the grid still paints with no request, and one cheap request
+          // follows it to correct the only part that goes stale.
+          refreshTotal(ticket);
           return;
         }
 
