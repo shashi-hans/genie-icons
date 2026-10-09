@@ -1,12 +1,12 @@
 // GET /api/icons      one page of icons, all weights, optionally filtered
 // GET /api/icons/all   the same, kept for callers that already use the path
 //
-// Both are paged. The catalogue passed 8,000 icons, and serving it whole meant a
-// 25 MB response — over the body limit a serverless function will return, and
-// more DOM than a browser will paint. So the page size and the search both moved
-// here: the client asks for the slice it can draw, and the filter runs against
-// the in-memory catalogue instead of shipping everything so the client can
-// discard most of it.
+// Both are paged. Once the catalogue reached a few thousand icons, serving it
+// whole meant a 25 MB response — over the body limit a serverless function will
+// return, and more DOM than a browser will paint. So the page size and the search
+// both moved here: the client asks for the slice it can draw, and the filter runs
+// against the in-memory catalogue instead of shipping everything so the client
+// can discard most of it.
 //
 // A page carries every weight, which is why there is no longer a second request
 // for the full set: at these page sizes the difference is a few hundred KB, and
@@ -27,7 +27,7 @@ const MAX_LIMIT = 400;
 const MAX_QUERY_CHARS = 60;
 // A `names` request answers with exactly the icons asked for. Bounded because
 // it bypasses paging: the caller names what it wants, so the response is as
-// large as the list, and 100 is well beyond the 40 the gallery's popular set
+// large as the list, and 100 is well beyond what the gallery's popular set
 // needs.
 const MAX_NAMES = 100;
 
@@ -70,11 +70,30 @@ async function page(req, res) {
 
   const all = await getStore().listIcons();
 
+  // Every name and nothing else.
+  //
+  // A caller that filters names in the page — the dashboard's icon list — needs
+  // the whole catalogue to filter against. Paged with artwork that is 23
+  // requests and about 25 MB; names alone are one request and about 140 KB, and
+  // the filter then runs against memory rather than a request per keystroke.
+  //
+  // Public, like the rest of this route: these names are already in every search
+  // response, so nothing is exposed here that was not before.
+  if (String(Array.isArray(query.detail) ? query.detail[0] : (query.detail ?? "")) === "names") {
+    return json(res, 200, {
+      names: all.map((icon) => icon.name),
+      total: all.length,
+      catalogueTotal: all.length,
+      detail: "names",
+    });
+  }
+
   // Exact names, in the order asked for.
   //
-  // The gallery's popular set is 40 names scattered through a 9,000-icon
+  // The gallery's popular set is a few dozen names scattered through the
   // catalogue, so no page contains them. It used to ask for each one separately
-  // and search for it: 40 requests, 8.8 MB, and the catalogue rebuilt 40 times.
+  // and search for it: one request and a 400-icon page per name, megabytes to
+  // paint one screen.
   // Worse, a substring search could not always find the name it was searching
   // for — "x" is match 578 of 594, past any page — so the set silently came back
   // one short.
