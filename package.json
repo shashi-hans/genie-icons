@@ -1,7 +1,7 @@
 {
   "name": "icon-genie",
   "version": "0.4.0",
-  "description": "A tree-shakeable React icon library of 9032 icons, with a weight prop (thin, regular, bold, fill, duotone). Artwork from Tabler, Phosphor, Lucide and Ionicons.",
+  "description": "A tree-shakeable React icon library of 7,872 icons, with a weight prop (thin, regular, bold, fill, duotone). Artwork from Tabler, Phosphor, Lucide and Ionicons.",
   "license": "MIT",
   "author": "Shashi Hans",
   "repository": {
