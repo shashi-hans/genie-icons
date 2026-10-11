@@ -1,6 +1,6 @@
 {
-  "source": "cs",
-  "set": "Coverstack",
+  "source": "ad",
+  "set": "Admin addition",
   "base": "bowl-meal",
   "licence": "MIT",
   "origin": "drawn for this project"

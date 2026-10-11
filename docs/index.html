@@ -51,9 +51,7 @@
       main { min-height: calc(100dvh - 160px); }
       header, footer { position: static; }
       header { padding: clamp(8px, 1.4vh, 15px) 20px; }
-      /* No footer padding of its own: the tight one-line rule here was written
-         for the old sticky bar and squashed the sectioned footer that replaced
-         it. app.css sizes it the same as every other page. */
+      /* The footer's one override is further down, under its own heading. */
 
       main {
         display: flex;
@@ -237,14 +235,15 @@
          the step after "Why Choose Icon-Genie-Gallery ?". Each then goes wide
          internally — the reasons in one row of four, the two snippets side by
          side — which buys back most of the height that stacking costs. */
-      /* These two are the page's reading section, so they sit apart from the
-         tool cards above and the footer below, and from each other. The extra
-         space is on top of the grid's own row gap. */
-      .reasons-panel { grid-column: span 12; margin-top: clamp(28px, 5vh, 76px); }
+      /* These two are the page's reading section. They used to be held well
+         apart from the tool cards and from each other with space that scaled by
+         viewport height; the grid's own row gap already separates them, and the
+         extra pushed the install block below the fold on a laptop. */
+      .reasons-panel { grid-column: span 12; margin-top: 10px; }
       .install {
         grid-column: span 12;
-        margin-top: clamp(26px, 4.6vh, 68px);
-        margin-bottom: clamp(28px, 5vh, 76px);
+        margin-top: 0;
+        margin-bottom: 0;
       }
       .install-code { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; align-items: start; }
       .block-title {
@@ -279,9 +278,14 @@
       .install .note { margin: 0; color: var(--muted); font-size: 12px; }
 
       /* --- Footer ------------------------------------------------------------ */
-      /* Nothing of its own. app.css sizes and caps the footer the same on every
-         page; the width and padding overrides that used to live here were written
-         for the old one-line sticky bar and fought the sectioned footer. */
+      /* One override, and only the top. The homepage closes tighter than the
+         other six: its last panel is the install block rather than a scrolling
+         list, so app.css's 32px left a gap that read as the page having ended
+         early.
+         padding-top alone, never the padding shorthand — that is what the old
+         rule here used, and zeroing the sides with it collapsed the sectioned
+         footer's column grid. Width, sides and bottom stay app.css's. */
+      footer { padding-top: 15px; }
 
       /* --- Gutter rails ------------------------------------------------------ */
       /* The margins of a wide screen, filled with the library itself. Purely
@@ -486,7 +490,7 @@
         <div class="panel bare reasons-panel">
           <h3 class="block-title">Why Choose Genie Icons ?</h3>
           <div class="panel-stats">
-            <span class="stat"><b id="stat-icons" data-icon-count>7,872</b>icons</span>
+            <span class="stat"><b id="stat-icons" data-icon-count>7,869</b>icons</span>
             <span class="stat"><b>5</b>weights each</span>
             <span class="stat"><b>4</b>upstream sets</span>
             <span class="stat"><b>90</b>brand logos</span>

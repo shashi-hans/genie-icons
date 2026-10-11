@@ -1,6 +1,6 @@
 {
-  "source": "cs",
-  "set": "Coverstack",
+  "source": "ad",
+  "set": "Admin addition",
   "base": "home",
   "licence": "MIT",
   "origin": "recovered from the rename in commit 33f6aee15"
