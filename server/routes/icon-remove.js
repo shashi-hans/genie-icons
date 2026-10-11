@@ -46,12 +46,12 @@ export default handler(async (req, res) => {
   // of a thousand would otherwise be a thousand round trips to the store.
   const known = new Set((await store.listIcons()).map((icon) => icon.name));
   const missing = names.filter((name) => !known.has(name));
-  if (missing.length === names.length) {
-    throw new HttpError(404, `No such icons: ${missing.slice(0, 10).join(", ")}.`);
-  }
-
-  // A name the catalogue does not have cannot be hidden, and has no files to
-  // delete either, so it is reported rather than failing the whole request.
+  // A name the catalogue does not have is not an error, even when every name is
+  // one. What the caller asked for — that these icons are gone — is already true
+  // of it. Answering 404 for a list removed in an earlier pass told the caller
+  // nothing it could act on, and cost it the `missing` list it needs to tidy up
+  // with. So it is reported rather than failing the request, and `present` is
+  // what actually gets hidden and deleted.
   const present = names.filter((name) => known.has(name));
   // In one round trip. Hiding them one at a time meant several hundred calls to
   // the store for a single press, which is past the time a deployed function is

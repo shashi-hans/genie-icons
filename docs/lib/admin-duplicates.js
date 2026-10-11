@@ -19,6 +19,7 @@
 // branch. Hiding alone — reversible, package untouched — is the button in the
 // review queue.
 import { withBusy } from "./busy.js";
+import { confirmAndRemove, removalSummary } from "./admin-remove.js";
 
 // Groups per page in the base-name list. Each group is 2-5 icons, so a page is
 // a few dozen cards.
@@ -27,9 +28,6 @@ const GROUPS_PER_PAGE = 15;
 // What /api/icons?names= will answer in one request. Names past it are dropped
 // by the server rather than refused, so the client has to do the splitting.
 const NAMES_PER_REQUEST = 100;
-
-/** What an admin has to type to confirm a removal. */
-const CONFIRM_WORD = "remove";
 
 // Working through 900 groups is not one sitting, and the selection used to live
 // only in this page's memory: a reload, or a failed removal followed by a
@@ -260,24 +258,16 @@ export function initDuplicates({ api, ids, onRemoved }) {
 
   el.remove.addEventListener("click", () =>
     withBusy(el.remove, async () => {
-      const names = [...chosen];
-      const typed = window.prompt(
-        `This removes ${names.length} ${names.length === 1 ? "icon" : "icons"} from the gallery AND deletes ` +
-          `their source files, so they leave the npm package on the next build.\n\n` +
-          `${names.slice(0, 12).join(", ")}${names.length > 12 ? `, and ${names.length - 12} more` : ""}\n\n` +
-          `Type ${CONFIRM_WORD} to confirm.`
-      );
-      if (typed?.trim().toLowerCase() !== CONFIRM_WORD) {
-        el.status.textContent = "Nothing was removed.";
-        return;
-      }
-
       try {
-        const res = await api("/api/icons/remove", {
-          method: "POST",
-          body: JSON.stringify({ names }),
-        });
-        for (const name of res.hidden) {
+        const { ok, res } = await confirmAndRemove(api, [...chosen]);
+        if (!ok) {
+          el.status.textContent = "Nothing was removed.";
+          return;
+        }
+        // What went, and what had already gone. A name the catalogue does not
+        // have cannot be removed again, so leaving it selected means a count
+        // that never falls and a button that never finishes.
+        for (const name of [...res.hidden, ...(res.missing ?? [])]) {
           chosen.delete(name);
           art.delete(name);
           dirty = true;
@@ -290,12 +280,7 @@ export function initDuplicates({ api, ids, onRemoved }) {
         onRemoved?.(res);
         // After load(), which writes its own summary into the note. Setting the
         // status first meant the reload of the groups wiped it.
-        el.status.textContent =
-          `${res.hidden.length} removed from the gallery, ` +
-          `${res.removed.length} source ${res.removed.length === 1 ? "directory" : "directories"} deleted. ` +
-          res.detail +
-          (res.missing?.length ? ` Not found: ${res.missing.join(", ")}.` : "") +
-          (res.error ? ` ${res.error}` : "");
+        el.status.textContent = removalSummary(res);
       } catch (err) {
         el.status.textContent = `Nothing was removed: ${err.message}`;
       }
