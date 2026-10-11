@@ -177,6 +177,11 @@
         background: var(--panel); color: var(--fg);
         border: 1px solid var(--border); border-radius: 8px;
       }
+      .iconlist-side select {
+        width: 100%; margin-top: 8px; font: inherit; font-size: 14px; padding: 7px 9px;
+        background: var(--panel); color: var(--fg);
+        border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+      }
       .iconlist-side .note { margin: 8px 0; }
       /* Scrolls on its own so a page of 60 names never pushes the grid down. */
       .iconlist-names {
@@ -191,10 +196,9 @@
       }
       .iconlist-names .name-row:last-child { border-bottom: 0; }
       .name-row:hover { background: var(--panel); }
-      /* The state of a name, in the column where names are read. Grey until a
-         side is chosen, so an untouched list has no colour to interpret. */
+      /* Whether a name is marked to drop, in the column where names are read.
+         Grey until it is, so an untouched list has no colour to interpret. */
       .name-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex: none; }
-      .name-row[data-state="in"] .name-dot { background: var(--ok); }
       .name-row[data-state="out"] .name-dot { background: var(--bad); }
 
       .iconlist-cards {
@@ -206,22 +210,24 @@
         position: relative; margin: 0; padding: 16px 6px 10px; text-align: center;
         background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
       }
-      .pick-card[data-state="in"] { border-color: var(--ok); }
       .pick-card[data-state="out"] { border-color: var(--bad); }
       .pick-card svg { width: 30px; height: 30px; color: var(--fg); }
-      .pick-card figcaption { margin-top: 8px; font-size: 12px; color: var(--muted); word-break: break-word; line-height: 1.35; }
+      /* The name carries the weight; the set under it is the supporting line,
+         so the name takes --fg and the set keeps --muted. Both stay readable:
+         --border is a rule colour and fails contrast as text. */
+      .pick-card figcaption { margin-top: 8px; font-size: 12px; color: var(--fg); word-break: break-word; line-height: 1.35; }
+      .pick-set { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); }
       /* In the card's corner: the cells are 112px wide, and a row of buttons
          under the name would leave no room for the name. */
-      .pick-btns { position: absolute; top: 5px; right: 5px; display: flex; gap: 3px; }
+      .pick-btns { position: absolute; top: 5px; right: 5px; }
       .pick-btns button {
         width: 20px; height: 20px; padding: 0; display: grid; place-items: center;
         font: 600 14px/1 inherit; cursor: pointer;
         background: var(--bg); color: var(--muted);
         border: 1px solid var(--border); border-radius: 5px;
       }
-      .pick-in:hover, .pick-in[aria-pressed="true"] { border-color: var(--ok); color: var(--ok); }
       .pick-out:hover, .pick-out[aria-pressed="true"] { border-color: var(--bad); color: var(--bad); }
-      .pick-in[aria-pressed="true"], .pick-out[aria-pressed="true"] { background: var(--panel); }
+      .pick-out[aria-pressed="true"] { background: var(--panel); }
       .iconlist-pager { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
       .iconlist-pager .note { margin: 0; }
 
@@ -441,16 +447,17 @@
           <table class="countries" id="generate"></table>
         </section>
 
-        <!-- A working note, not a control. The two lists live in this browser
-             and are never sent anywhere: nothing here hides an icon, publishes
-             one, or changes what a visitor sees. Hiding is a separate button in
-             the review queue above. See docs/lib/admin-icon-list.js. -->
+        <!-- Mostly a working note: the two lists live in this browser and change
+             nothing for a visitor. The exception is Remove selected on the
+             dropped list, which deletes that artwork for good behind a typed
+             confirmation. See docs/lib/admin-icon-list.js. -->
         <section id="iconlist-block" hidden>
           <h2 class="section-heading">Icon list</h2>
           <p class="note" id="iconlist-note"></p>
           <div class="iconlist">
             <div class="iconlist-side">
               <input type="search" id="iconlist-q" placeholder="Filter by name" autocomplete="off" />
+              <select id="iconlist-source" aria-label="Browse by source"></select>
               <p class="note" id="iconlist-count"></p>
               <ul class="iconlist-names" id="iconlist-names"></ul>
             </div>
@@ -464,6 +471,9 @@
             </div>
           </div>
           <div class="iconlist-picks" id="iconlist-picks" hidden></div>
+          <!-- Beside the lists, because the button that writes here is at the
+               foot of the page and the section note is at its head. -->
+          <p class="note" id="iconlist-picks-status"></p>
         </section>
 
         <!-- The one view in this project that deletes artwork rather than
@@ -820,6 +830,7 @@
           block: "iconlist-block",
           note: "iconlist-note",
           search: "iconlist-q",
+          source: "iconlist-source",
           count: "iconlist-count",
           names: "iconlist-names",
           cards: "iconlist-cards",
@@ -828,6 +839,7 @@
           prev: "iconlist-prev",
           next: "iconlist-next",
           picks: "iconlist-picks",
+          picksStatus: "iconlist-picks-status",
         },
       });
 

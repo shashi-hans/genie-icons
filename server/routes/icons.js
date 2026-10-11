@@ -82,6 +82,11 @@ async function page(req, res) {
   if (String(Array.isArray(query.detail) ? query.detail[0] : (query.detail ?? "")) === "names") {
     return json(res, 200, {
       names: all.map((icon) => icon.name),
+      // Parallel to `names` rather than an array of objects: the set code is two
+      // or three characters, and repeating a key beside each one would be most
+      // of the response. `sets` below turns a code into the name to show.
+      sources: all.map((icon) => icon.source ?? ""),
+      sets: readSetNames(),
       total: all.length,
       catalogueTotal: all.length,
       detail: "names",
